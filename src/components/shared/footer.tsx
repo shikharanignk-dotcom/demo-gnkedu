@@ -9,16 +9,22 @@ const supabase = createClient();
 
 export function Footer() {
   const [phone, setPhone] = useState("919352483446");
+  const [logoText, setLogoText] = useState("GNK Demos");
 
   useEffect(() => {
     supabase
       .from("site_settings")
       .select("*")
-      .eq("key", "whatsapp_config")
-      .maybeSingle()
       .then(({ data }) => {
-        if (data && data.value && data.value.phone) {
-          setPhone(data.value.phone);
+        if (data) {
+          const wa = data.find((row) => row.key === "whatsapp_config")?.value;
+          const hc = data.find((row) => row.key === "homepage_config")?.value;
+          if (wa && wa.phone) {
+            setPhone(wa.phone);
+          }
+          if (hc && hc.logo_text) {
+            setLogoText(hc.logo_text);
+          }
         }
       });
   }, []);
@@ -34,8 +40,8 @@ export function Footer() {
           {/* Brand Info */}
           <div className="md:col-span-2 space-y-3">
             <Link href="/" className="flex items-center gap-2 font-heading text-lg font-bold text-slate-900">
-              <CheckSquare className="h-5 w-5 text-indigo-600" />
-              GNK <span className="text-indigo-600 font-medium">Demos</span>
+              <CheckSquare className="h-5 w-5 text-brand-primary" />
+              <span>{logoText}</span>
             </Link>
             <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
               Premium showcase of our handwriting assignments, academic projects, coding demos, and course reviews. Verified trust and quality service for students.

@@ -22,6 +22,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [phone, setPhone] = useState("919352483446");
+  const [logoText, setLogoText] = useState("GNK Demos");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -35,15 +36,20 @@ export function Navbar() {
     supabase
       .from("site_settings")
       .select("*")
-      .eq("key", "whatsapp_config")
-      .maybeSingle()
       .then(({ data }) => {
-        if (data && data.value && data.value.phone) {
-          let num = data.value.phone;
-          if (num.length === 10 && !num.startsWith("91")) {
-            num = "91" + num;
+        if (data) {
+          const wa = data.find((row) => row.key === "whatsapp_config")?.value;
+          const hc = data.find((row) => row.key === "homepage_config")?.value;
+          if (wa && wa.phone) {
+            let num = wa.phone;
+            if (num.length === 10 && !num.startsWith("91")) {
+              num = "91" + num;
+            }
+            setPhone(num);
           }
-          setPhone(num);
+          if (hc && hc.logo_text) {
+            setLogoText(hc.logo_text);
+          }
         }
       });
 
@@ -79,7 +85,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-1.5 font-heading text-lg font-extrabold tracking-tight text-slate-900">
             <CheckSquare className="h-5 w-5 text-brand-primary" />
-            GNK <span className="text-brand-primary font-medium">Demos</span>
+            <span>{logoText}</span>
           </Link>
 
           {/* Desktop Nav */}

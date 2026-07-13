@@ -18,6 +18,13 @@ interface ShowcaseHubProps {
     theme_color?: string;
   };
 }
+const THEME_COLORS: Record<string, { primary: string; hover: string; light: string; rgb: string }> = {
+  indigo: { primary: "#4f46e5", hover: "#4338ca", light: "#f5f3ff", rgb: "79, 70, 229" },
+  violet: { primary: "#7c3aed", hover: "#6d28d9", light: "#faf5ff", rgb: "124, 58, 237" },
+  amber: { primary: "#d97706", hover: "#b85c00", light: "#fffbeb", rgb: "217, 119, 6" },
+  emerald: { primary: "#059669", hover: "#047857", light: "#f0fdf4", rgb: "5, 150, 105" },
+  rose: { primary: "#e11d48", hover: "#be185d", light: "#fff1f2", rgb: "225, 29, 72" },
+};
 
 export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, settings }: ShowcaseHubProps) {
   const [activeTab, setActiveTab] = useState<"assignments" | "projects" | "videos">("assignments");
@@ -43,14 +50,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
     console.log("whatsappPhone:", whatsappPhone);
 
     const root = document.documentElement;
-    const colors: Record<string, { primary: string; hover: string; light: string; rgb: string }> = {
-      indigo: { primary: "#4f46e5", hover: "#4338ca", light: "#f5f3ff", rgb: "79, 70, 229" },
-      violet: { primary: "#7c3aed", hover: "#6d28d9", light: "#faf5ff", rgb: "124, 58, 237" },
-      amber: { primary: "#d97706", hover: "#b85c00", light: "#fffbeb", rgb: "217, 119, 6" },
-      emerald: { primary: "#059669", hover: "#047857", light: "#f0fdf4", rgb: "5, 150, 105" },
-      rose: { primary: "#e11d48", hover: "#be185d", light: "#fff1f2", rgb: "225, 29, 72" },
-    };
-    const theme = colors[themeColor] || colors.indigo;
+    const theme = THEME_COLORS[themeColor] || THEME_COLORS.indigo;
     root.style.setProperty("--dynamic-brand-color", theme.primary);
     root.style.setProperty("--dynamic-brand-hover", theme.hover);
     root.style.setProperty("--dynamic-brand-light", theme.light);
@@ -118,6 +118,27 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
 
   return (
     <div className="w-full space-y-5 pb-16 md:pb-6">
+      {/* Dynamic CSS Color Overrides */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .bg-brand-primary {
+          background-color: ${THEME_COLORS[themeColor]?.primary || "#4f46e5"} !important;
+        }
+        .text-brand-primary {
+          color: ${THEME_COLORS[themeColor]?.primary || "#4f46e5"} !important;
+        }
+        .hover\\:bg-brand-primary-hover:hover {
+          background-color: ${THEME_COLORS[themeColor]?.hover || "#4338ca"} !important;
+        }
+        .bg-brand-primary-light {
+          background-color: ${THEME_COLORS[themeColor]?.light || "#f5f3ff"} !important;
+        }
+        .border-brand-primary-light {
+          border-color: ${THEME_COLORS[themeColor]?.light || "#f5f3ff"} !important;
+        }
+        .text-brand-primary-light {
+          color: ${THEME_COLORS[themeColor]?.light || "#f5f3ff"} !important;
+        }
+      `}} />
       {/* 📱 Main Billboard Notices Alert Bar (Floating Notice Bulletin) */}
       {latestNotice && (
         <div 

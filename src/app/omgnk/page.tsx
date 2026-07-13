@@ -23,6 +23,7 @@ export default function AdminDashboardPage() {
     show_assignments: true,
     show_projects: true,
     show_videos: true,
+    logo_text: "GNK Demos",
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,6 +108,7 @@ export default function AdminDashboardPage() {
           show_assignments: hc.show_assignments !== false,
           show_projects: hc.show_projects !== false,
           show_videos: hc.show_videos !== false,
+          logo_text: hc.logo_text || "GNK Demos",
         });
       }
     } catch (err) {
@@ -604,6 +606,15 @@ export default function AdminDashboardPage() {
                     onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_subtitle: e.target.value })}
                     rows={2}
                     className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 resize-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] text-slate-500 font-medium">Logo Branding Text</label>
+                  <input
+                    type="text"
+                    value={homepageConfig.logo_text || ""}
+                    onChange={(e) => setHomepageConfig({ ...homepageConfig, logo_text: e.target.value })}
+                    className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
