@@ -16,6 +16,14 @@ export default function AdminDashboardPage() {
   const [notices, setNotices] = useState<any[]>([]);
   const [counters, setCounters] = useState<any>({ students: 500, assignments: 1000, projects: 50 });
   const [whatsapp, setWhatsapp] = useState<any>({ phone: "919352483446", message: "" });
+  const [homepageConfig, setHomepageConfig] = useState<any>({
+    hero_title: "Guru Nanak Photostat Fatehabad",
+    hero_subtitle: "Verify Assignment Sheet Quality Before You Order.",
+    theme_color: "indigo",
+    show_assignments: true,
+    show_projects: true,
+    show_videos: true,
+  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -25,7 +33,7 @@ export default function AdminDashboardPage() {
   const [formTitle, setFormTitle] = useState("");
   const [formSubject, setFormSubject] = useState("");
   const [formSemester, setFormSemester] = useState("");
-  const [formUniversity, setFormUniversity] = useState("IGNOU");
+  const [formUniversity, setFormUniversity] = useState("");
   const [formFormat, setFormFormat] = useState("handwritten");
   const [formCategory, setFormCategory] = useState("");
   const [formDesc, setFormDesc] = useState("");
@@ -89,8 +97,17 @@ export default function AdminDashboardPage() {
       if (settingsData) {
         const cnt = settingsData.find((s) => s.key === "counters")?.value;
         const wa = settingsData.find((s) => s.key === "whatsapp_config")?.value;
+        const hc = settingsData.find((s) => s.key === "homepage_config")?.value;
         if (cnt) setCounters(cnt);
         if (wa) setWhatsapp(wa);
+        if (hc) setHomepageConfig({
+          hero_title: hc.hero_title || "Guru Nanak Photostat Fatehabad",
+          hero_subtitle: hc.hero_subtitle || "Verify Assignment Sheet Quality Before You Order.",
+          theme_color: hc.theme_color || "indigo",
+          show_assignments: hc.show_assignments !== false,
+          show_projects: hc.show_projects !== false,
+          show_videos: hc.show_videos !== false,
+        });
       }
     } catch (err) {
       console.error("Error loading admin dashboard datasets:", err);
@@ -250,7 +267,11 @@ export default function AdminDashboardPage() {
         .from("site_settings")
         .upsert({ key: "whatsapp_config", value: whatsapp });
 
-      if (err1 || err2) throw err1 || err2;
+      const { error: err3 } = await supabase
+        .from("site_settings")
+        .upsert({ key: "homepage_config", value: homepageConfig });
+
+      if (err1 || err2 || err3) throw err1 || err2 || err3;
       alert("Settings updated successfully!");
     } catch (err: any) {
       alert(`Failed to save settings: ${err.message}`);
@@ -551,11 +572,84 @@ export default function AdminDashboardPage() {
 
         {/* Tab 5: Settings Page */}
         {activeTab === "settings" && (
-          <form onSubmit={handleSaveSettings} className="space-y-4 max-w-md p-5 rounded-2xl border border-slate-200 bg-white shadow-premium">
+          <form onSubmit={handleSaveSettings} className="space-y-4 max-w-lg p-5 rounded-2xl border border-slate-200 bg-white shadow-premium">
             <h2 className="text-sm font-heading font-bold text-slate-900">General Site Configurations</h2>
 
+            {/* Customizer */}
+            <div className="space-y-3 pt-1">
+              <h3 className="text-[10px] font-bold text-slate-800 uppercase tracking-wide">Homepage customizer</h3>
+              <div className="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200/60">
+                <div className="space-y-1">
+                  <label className="text-[9px] text-slate-500 font-medium">Hero Heading Title</label>
+                  <input
+                    type="text"
+                    value={homepageConfig.hero_title}
+                    onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_title: e.target.value })}
+                    className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] text-slate-500 font-medium">Hero Subtitle</label>
+                  <textarea
+                    value={homepageConfig.hero_subtitle}
+                    onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_subtitle: e.target.value })}
+                    rows={2}
+                    className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 resize-none"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-medium">Brand Theme Color</label>
+                    <select
+                      value={homepageConfig.theme_color}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, theme_color: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-700"
+                    >
+                      <option value="indigo">Indigo (Default)</option>
+                      <option value="violet">Violet Purple</option>
+                      <option value="amber">Amber Gold</option>
+                      <option value="emerald">Emerald Green</option>
+                      <option value="rose">Rose Red</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-2 pt-1">
+                  <label className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Visible Sections</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={homepageConfig.show_assignments !== false}
+                        onChange={(e) => setHomepageConfig({ ...homepageConfig, show_assignments: e.target.checked })}
+                        className="rounded border-slate-300 text-indigo-600"
+                      />
+                      <span>Assignments</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={homepageConfig.show_projects !== false}
+                        onChange={(e) => setHomepageConfig({ ...homepageConfig, show_projects: e.target.checked })}
+                        className="rounded border-slate-300 text-indigo-600"
+                      />
+                      <span>Projects</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={homepageConfig.show_videos !== false}
+                        onChange={(e) => setHomepageConfig({ ...homepageConfig, show_videos: e.target.checked })}
+                        className="rounded border-slate-300 text-indigo-600"
+                      />
+                      <span>Videos</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Counters */}
-            <div className="space-y-2">
+            <div className="space-y-2 pt-3 border-t border-slate-100">
               <h3 className="text-[10px] font-bold text-slate-800 uppercase tracking-wide">Trust counters</h3>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
