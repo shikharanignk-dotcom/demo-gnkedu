@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { ShieldCheck, Plus, Trash2, LogOut, FileText, Globe, PlayCircle, Star, Settings, Loader2, Upload, X, Bell } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
+const supabase = createClient();
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,6 @@ export default function AdminDashboardPage() {
   const [notices, setNotices] = useState<any[]>([]);
   const [counters, setCounters] = useState<any>({ students: 500, assignments: 1000, projects: 50 });
   const [whatsapp, setWhatsapp] = useState<any>({ phone: "919352483446", message: "" });
-  const supabase = createClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
