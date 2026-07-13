@@ -4,29 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Search, PlayCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const FALLBACK_VIDEOS = [
-  {
-    id: "v1",
-    type: "video",
-    title: "Handwriting Assignment Quality & Paper Review Demo",
-    youtube_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Handwriting Demo",
-  },
-  {
-    id: "v2",
-    type: "video",
-    title: "NextJS React Project Implementation and Admin Walkthrough",
-    youtube_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Project Demo",
-  },
-  {
-    id: "v3",
-    type: "video",
-    title: "IGNOU Handwritten Assignment Format viva tips",
-    youtube_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Academic Help",
-  },
-];
+const FALLBACK_VIDEOS: any[] = [];
 
 export default function VideosPage() {
   const [items, setItems] = useState<any[]>(FALLBACK_VIDEOS);

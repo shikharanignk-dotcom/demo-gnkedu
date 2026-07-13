@@ -4,56 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Search, BookOpen, X, Download, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const FALLBACK_ASSIGNMENTS = [
-  {
-    id: "a1",
-    type: "assignment",
-    title: "IGNOU DECE-01 Handwritten Assignment",
-    subject: "Early Childhood Care & Education",
-    semester: "Semester 1",
-    university: "IGNOU",
-    assignment_type: "handwritten",
-    thumbnail_url: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=400",
-    file_urls: ["https://pdfobject.com/pdf/sample.pdf"],
-    category: "DECE Diploma",
-  },
-  {
-    id: "a2",
-    type: "assignment",
-    title: "BCA Computer Networks Typed Assignment",
-    subject: "Computer Networks",
-    semester: "Semester 3",
-    university: "IP University",
-    assignment_type: "pdf",
-    thumbnail_url: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=400",
-    file_urls: ["https://pdfobject.com/pdf/sample.pdf"],
-    category: "BCA Computer Science",
-  },
-  {
-    id: "a3",
-    type: "assignment",
-    title: "MBA Marketing Case Study Report",
-    subject: "Marketing Management",
-    semester: "Semester 2",
-    university: "IGNOU",
-    assignment_type: "typed",
-    thumbnail_url: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&q=80&w=400",
-    file_urls: ["https://pdfobject.com/pdf/sample.pdf"],
-    category: "MBA Business",
-  },
-  {
-    id: "a4",
-    type: "assignment",
-    title: "IGNOU DECE-02 Handwritten Sheets",
-    subject: "Child Health & Nutrition",
-    semester: "Semester 1",
-    university: "IGNOU",
-    assignment_type: "handwritten",
-    thumbnail_url: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=400",
-    file_urls: ["https://pdfobject.com/pdf/sample.pdf"],
-    category: "DECE Diploma",
-  },
-];
+const FALLBACK_ASSIGNMENTS: any[] = [];
 
 export default function AssignmentsPage() {
   const [items, setItems] = useState<any[]>(FALLBACK_ASSIGNMENTS);

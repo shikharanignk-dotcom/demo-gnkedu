@@ -4,48 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Star, GraduationCap, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const FALLBACK_REVIEWS = [
-  {
-    id: "r1",
-    student_name: "Priya Sharma",
-    rating: 5,
-    review_text: "Perfect quality handwritten sheets. Handwriting was extremely clean and uniform throughout all pages. Got 90 marks in IGNOU exam. Highly recommend!",
-    university: "IGNOU (DECE)",
-    verified: true,
-  },
-  {
-    id: "r2",
-    student_name: "Rahul Kumar",
-    rating: 5,
-    review_text: "The web project runs smoothly on my local machine. The explanations provided in the walkthrough video helped me clear my college viva easily.",
-    university: "Amity University (BCA)",
-    verified: true,
-  },
-  {
-    id: "r3",
-    student_name: "Shivani Meena",
-    rating: 5,
-    review_text: "Fast delivery and great customer support on WhatsApp. They resolved my doubts about formatting immediately.",
-    university: "Rajasthan University (BA)",
-    verified: true,
-  },
-  {
-    id: "r4",
-    student_name: "Aman Gupta",
-    rating: 5,
-    review_text: "Got complete assignment softcopies. Format was exactly as per IGNOU guidelines. Excellent scoring support.",
-    university: "IGNOU (MCA)",
-    verified: true,
-  },
-  {
-    id: "r5",
-    student_name: "Neha Preet",
-    rating: 4,
-    review_text: "Very neat handwriting. Got the files on time. Will definitely order again next semester.",
-    university: "Delhi University (B.Com)",
-    verified: false,
-  },
-];
+const FALLBACK_REVIEWS: any[] = [];
 
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<any[]>(FALLBACK_REVIEWS);

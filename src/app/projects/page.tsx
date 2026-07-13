@@ -4,49 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Search, FolderCode, X, Globe, Video, Award, Layers } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const FALLBACK_PROJECTS = [
-  {
-    id: "p1",
-    type: "project",
-    title: "GNK Edusolution CRM Dashboard",
-    tech_stack: ["Next.js", "Tailwind", "Supabase", "Docker"],
-    description: "Fully responsive lead management dashboard integrating WhatsApp webhooks. Allows multiple agents to chat with students, manage templates, automate follow-ups, and track transaction logs.",
-    thumbnail_url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    file_urls: [
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&q=80&w=600"
-    ],
-    live_url: "https://gnkedu.online",
-    youtube_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Full Stack Web",
-  },
-  {
-    id: "p2",
-    type: "project",
-    title: "Hostel Warden Portal & Mess App",
-    tech_stack: ["React Native", "NodeJS", "MongoDB"],
-    description: "Multi-role application for college hostel administration. Wardens can manage room allocations, students can request gate passes, and kitchen staff can update food calendar menus.",
-    thumbnail_url: "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80&w=600",
-    file_urls: [
-      "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=600"
-    ],
-    live_url: "",
-    youtube_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Mobile App",
-  },
-  {
-    id: "p3",
-    type: "project",
-    title: "Library Book Tracker Application",
-    tech_stack: ["React", "Express", "SQLite"],
-    description: "A desktop-friendly portal for library operations. Features barcode scan search emulation, automatic late-fee calculations, and book inventory stock metrics.",
-    thumbnail_url: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=600",
-    file_urls: [],
-    live_url: "",
-    youtube_url: "",
-    category: "Desktop Application",
-  },
-];
+const FALLBACK_PROJECTS: any[] = [];
 
 export default function ProjectsPage() {
   const [items, setItems] = useState<any[]>(FALLBACK_PROJECTS);

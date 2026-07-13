@@ -5,91 +5,9 @@ import Link from "next/link";
 import { BookOpen, FolderCode, PlayCircle, Star, MessageSquare, ArrowRight, Award, Zap, HeartHandshake, Bell } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const MOCK_DEMOS = [
-  {
-    id: "1",
-    type: "assignment",
-    title: "IGNOU DECE-01 Handwritten Assignment",
-    subject: "Early Childhood Care & Education",
-    semester: "Semester 1",
-    university: "IGNOU",
-    assignment_type: "handwritten",
-    thumbnail_url: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=400",
-    category: "DECE Diploma",
-    is_featured: true,
-  },
-  {
-    id: "2",
-    type: "assignment",
-    title: "BCA Computer Networks Typed Assignment",
-    subject: "Computer Networks",
-    semester: "Semester 3",
-    university: "IP University",
-    assignment_type: "pdf",
-    thumbnail_url: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=400",
-    category: "BCA Computer Science",
-    is_featured: true,
-  },
-  {
-    id: "3",
-    type: "project",
-    title: "E-Commerce Website with Admin Dashboard",
-    tech_stack: ["Next.js", "Tailwind", "Supabase"],
-    description: "Fully responsive online store with product listings, cart system, checkout, and custom sales analytics dashboard for the owner.",
-    thumbnail_url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=400",
-    category: "Full Stack Web",
-    is_featured: true,
-  },
-  {
-    id: "4",
-    type: "project",
-    title: "Hostel Management System App",
-    tech_stack: ["React Native", "NodeJS"],
-    description: "Mobile application for students to request leaves, report hostel issues, and view daily dining menu schedules.",
-    thumbnail_url: "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80&w=400",
-    category: "Mobile App",
-    is_featured: true,
-  },
-];
-
-const MOCK_VIDEOS = [
-  {
-    id: "v1",
-    title: "Handwriting Assignment Quality & Paper Review Demo",
-    youtube_id: "dQw4w9WgXcQ",
-    category: "Handwriting Demo",
-  },
-  {
-    id: "v2",
-    title: "NextJS React Project Implementation and Admin Walkthrough",
-    youtube_id: "dQw4w9WgXcQ",
-    category: "Project Demo",
-  },
-];
-
-const MOCK_REVIEWS = [
-  {
-    id: "r1",
-    student_name: "Priya Sharma",
-    rating: 5,
-    review_text: "Perfect quality handwritten sheets. Handwriting was extremely clean and uniform throughout all pages. Got 90 marks in IGNOU exam. Highly recommend!",
-    university: "IGNOU (DECE)",
-  },
-  {
-    id: "r2",
-    student_name: "Rahul Kumar",
-    rating: 5,
-    review_text: "The web project runs smoothly on my local machine. The explanations provided in the walkthrough video helped me clear my college viva easily.",
-    university: "Amity University (BCA)",
-  },
-  {
-    id: "r3",
-    student_name: "Shivani Meena",
-    rating: 5,
-    review_text: "Fast delivery and great customer support on WhatsApp. They resolved my doubts about formatting immediately.",
-    university: "Rajasthan University (BA)",
-  },
-];
+const MOCK_DEMOS: any[] = [];
+const MOCK_VIDEOS: any[] = [];
+const MOCK_REVIEWS: any[] = [];
 
 export default function LandingPage() {
   const [demos, setDemos] = useState<any[]>(MOCK_DEMOS);

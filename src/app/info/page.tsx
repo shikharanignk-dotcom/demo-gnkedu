@@ -4,29 +4,7 @@ import { useEffect, useState } from "react";
 import { Info, HelpCircle, Bell, ArrowRight, HelpCircle as FAQIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const FALLBACK_INFO = [
-  {
-    id: "inf1",
-    title: "How do I download/get my assignment copy?",
-    content: "Once you place an order on WhatsApp, our agents will generate the PDF link and share it directly with you on chat. You can also view it by clicking the link on our demo page.",
-    category: "FAQ",
-    is_important: false,
-  },
-  {
-    id: "inf2",
-    title: "Paper Layout and Quality Guidelines",
-    content: "All handwritten assignments are written using 80 GSM white paper with clean left and top margins. We use blue/black ballpoint pens as per official IGNOU guidelines. Every page has page numbers printed.",
-    category: "Notice",
-    is_important: true,
-  },
-  {
-    id: "inf3",
-    title: "Guidelines for Running BCA/MCA Projects",
-    content: "Every college project order includes: 1) Full project codebase, 2) Complete project report doc (Word/PDF), 3) A short video showing how to run the project locally. We also support remote teamviewer setup if needed.",
-    category: "Instruction",
-    is_important: false,
-  },
-];
+const FALLBACK_INFO: any[] = [];
 
 export default function InfoPage() {
   const [notices, setNotices] = useState<any[]>(FALLBACK_INFO);
