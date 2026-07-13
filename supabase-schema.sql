@@ -81,7 +81,11 @@ INSERT INTO site_settings (key, value) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO site_settings (key, value) VALUES
-('whatsapp_config', '{"phone": "919352483446", "message": "Hello GNK Edusolution, I want to inquire about assignments/projects."}')
+('whatsapp_config', '{"phone": "919352483446", "message": "Hello Guru Nanak Photostat, I want to inquire about assignments/projects."}')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO site_settings (key, value) VALUES
+('homepage_config', '{"hero_title": "Guru Nanak Photostat Fatehabad", "hero_subtitle": "Verify Assignment Sheet Quality Before You Order.", "theme_color": "indigo", "show_assignments": true, "show_projects": true, "show_videos": true}')
 ON CONFLICT (key) DO NOTHING;
 
 -- Enable Row Level Security (RLS)

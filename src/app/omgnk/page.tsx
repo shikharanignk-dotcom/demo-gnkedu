@@ -259,22 +259,31 @@ export default function AdminDashboardPage() {
     setSubmitting(true);
 
     try {
+      console.log("Saving site settings counters:", counters);
       const { error: err1 } = await supabase
         .from("site_settings")
-        .upsert({ key: "counters", value: counters });
+        .upsert({ key: "counters", value: counters }, { onConflict: "key" });
 
+      console.log("Saving site settings whatsapp:", whatsapp);
       const { error: err2 } = await supabase
         .from("site_settings")
-        .upsert({ key: "whatsapp_config", value: whatsapp });
+        .upsert({ key: "whatsapp_config", value: whatsapp }, { onConflict: "key" });
 
+      console.log("Saving site settings homepageConfig:", homepageConfig);
       const { error: err3 } = await supabase
         .from("site_settings")
-        .upsert({ key: "homepage_config", value: homepageConfig });
+        .upsert({ key: "homepage_config", value: homepageConfig }, { onConflict: "key" });
 
-      if (err1 || err2 || err3) throw err1 || err2 || err3;
+      if (err1 || err2 || err3) {
+        const activeErr = err1 || err2 || err3;
+        console.error("Upsert error details:", err1, err2, err3);
+        throw new Error(activeErr?.message || "Database write operation failed.");
+      }
+
       alert("Settings updated successfully!");
     } catch (err: any) {
-      alert(`Failed to save settings: ${err.message}`);
+      console.error("Failed to save settings:", err);
+      alert(`Failed to save settings: ${err.message || JSON.stringify(err)}`);
     } finally {
       setSubmitting(false);
     }
