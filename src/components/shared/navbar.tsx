@@ -43,7 +43,7 @@ export function Navbar() {
         <div className="mx-auto flex max-w-7xl h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/omgnk" className="flex items-center gap-2 font-heading text-base font-bold tracking-tight text-slate-900">
             <ShieldCheck className="h-5 w-5 text-indigo-600" />
-            GNK Edusolution <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-200">Admin</span>
+            Guru Nanak Photostat <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-200">Admin</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/" className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors">

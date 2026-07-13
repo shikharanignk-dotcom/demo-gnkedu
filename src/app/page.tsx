@@ -142,7 +142,7 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-heading font-extrabold tracking-tight text-slate-900 leading-tight">
-            Verify Assignment Sheet Quality Before You Order at <span className="text-gradient">GNK Edusolution</span>
+            Verify Assignment Sheet Quality Before You Order at <span className="text-gradient">Guru Nanak Photostat Fatehabad</span>
           </h1>
 
           <p className="text-sm sm:text-base text-text-muted max-w-2xl mx-auto leading-relaxed">
@@ -195,7 +195,7 @@ export default function LandingPage() {
       {/* 🛡️ Core Values Section */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 space-y-8">
         <div className="text-center space-y-2">
-          <h2 className="text-xl sm:text-2xl font-heading font-bold text-slate-900">Why GNK Edusolution?</h2>
+          <h2 className="text-xl sm:text-2xl font-heading font-bold text-slate-900">Why Guru Nanak Photostat Fatehabad?</h2>
           <p className="text-xs text-text-muted max-w-sm mx-auto">We focus on high scoring sheet layout formats and clean codebases.</p>
         </div>
 

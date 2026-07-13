@@ -67,13 +67,8 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-8 pt-6 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[10px] text-slate-400">
-            &copy; {new Date().getFullYear()} GNK Edusolution. All rights reserved.
+            &copy; {new Date().getFullYear()} Guru Nanak Photostat Fatehabad. All rights reserved.
           </p>
-          <div className="flex gap-4">
-            <Link href="/admin/login" className="text-[10px] text-slate-400 hover:text-indigo-600 transition-colors">
-              Admin Login
-            </Link>
-          </div>
         </div>
       </div>
     </footer>

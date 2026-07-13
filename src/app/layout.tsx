@@ -5,9 +5,9 @@ import { Footer } from "@/components/shared/footer";
 import { WhatsAppWidget } from "@/components/shared/whatsapp-widget";
 
 export const metadata: Metadata = {
-  title: "GNK Edusolution - Demo & Assignment Showcase",
-  description: "Official demo portfolio of GNK Edusolution. Explore academic assignments, project source codes, video tutorials, and verified student reviews.",
-  keywords: "gnk edusolution, assignment demo, handwriting assignments, projects demo, student assignments",
+  title: "Guru Nanak Photostat Fatehabad - Demo & Assignment Showcase",
+  description: "Official demo portfolio of Guru Nanak Photostat Fatehabad. Explore academic assignments, project source codes, video tutorials, and verified student reviews.",
+  keywords: "guru nanak photostat fatehabad, assignment demo, handwriting assignments, projects demo, student assignments",
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full scroll-smooth">
-      <body className="flex min-h-full flex-col bg-bg-dark text-slate-100 antialiased selection:bg-brand-purple/30 selection:text-white">
+      <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 antialiased selection:bg-indigo-600/20 selection:text-indigo-900">
         {/* Navigation Header */}
         <Navbar />
 
