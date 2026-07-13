@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        router.replace("/admin/login");
+        router.replace("/omgnk/login");
       } else {
         fetchAdminData();
       }
@@ -100,7 +100,7 @@ export default function AdminDashboardPage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.replace("/admin/login");
+    router.replace("/omgnk/login");
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "file" | "thumbnail") => {

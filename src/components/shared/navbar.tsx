@@ -35,13 +35,13 @@ export function Navbar() {
     };
   }, [supabase.auth]);
 
-  const isAdminRoute = pathname?.startsWith("/admin");
+  const isAdminRoute = pathname?.startsWith("/omgnk");
 
   if (isAdminRoute) {
     return (
       <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex max-w-7xl h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/admin" className="flex items-center gap-2 font-heading text-base font-bold tracking-tight text-slate-900">
+          <Link href="/omgnk" className="flex items-center gap-2 font-heading text-base font-bold tracking-tight text-slate-900">
             <ShieldCheck className="h-5 w-5 text-indigo-600" />
             GNK Edusolution <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-200">Admin</span>
           </Link>
@@ -85,15 +85,6 @@ export function Navbar() {
 
           {/* Desktop Action */}
           <div className="hidden md:flex items-center gap-4">
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="text-xs px-3 py-1.5 rounded-full border border-indigo-100 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all font-medium flex items-center gap-1"
-              >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Admin Dashboard
-              </Link>
-            )}
             <a
               href="https://wa.me/919352483446"
               target="_blank"
@@ -106,15 +97,6 @@ export function Navbar() {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-3">
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="p-1.5 rounded-full border border-indigo-100 bg-indigo-50 text-indigo-600"
-                title="Admin Panel"
-              >
-                <ShieldCheck className="h-4 w-4" />
-              </Link>
-            )}
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}

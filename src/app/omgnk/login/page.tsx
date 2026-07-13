@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        router.replace("/admin");
+        router.replace("/omgnk");
       }
     });
   }, [router, supabase.auth]);
@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
       }
 
       if (data.session) {
-        router.replace("/admin");
+        router.replace("/omgnk");
       }
     } catch (err) {
       setError("An unexpected error occurred during authentication.");
