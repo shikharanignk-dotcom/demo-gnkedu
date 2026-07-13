@@ -142,7 +142,7 @@ export default function AssignmentsPage() {
             {/* Info */}
             <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
               <div className="space-y-1.5">
-                <span className="text-[9px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold tracking-wider uppercase">
+                <span className="text-[9px] px-2 py-0.5 rounded bg-brand-primary-light text-brand-primary border border-brand-primary-light font-bold tracking-wider uppercase">
                   {item.category}
                 </span>
                 <h3 className="text-sm font-heading font-bold text-slate-900 pt-1 leading-snug">
@@ -166,7 +166,7 @@ export default function AssignmentsPage() {
                     setViewerItem(item);
                     setZoom(100);
                   }}
-                  className="flex-1 text-center py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                  className="flex-1 text-center py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
                 >
                   View Sample
                 </button>
@@ -246,7 +246,7 @@ export default function AssignmentsPage() {
 
                 <button
                   onClick={() => setViewerItem(null)}
-                  className="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg bg-brand-primary-light hover:bg-indigo-100 text-brand-primary transition-colors cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -285,7 +285,7 @@ export default function AssignmentsPage() {
                 href={`https://wa.me/919352483446?text=Hi, I am interested in assignment: ${encodeURIComponent(viewerItem.title)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold text-[10px] uppercase text-center hover:bg-indigo-700 shadow-sm transition-all"
+                className="w-full sm:w-auto px-5 py-2 rounded-xl bg-brand-primary text-white font-semibold text-[10px] uppercase text-center hover:bg-brand-primary-hover shadow-sm transition-all"
               >
                 Inquire on WhatsApp
               </a>

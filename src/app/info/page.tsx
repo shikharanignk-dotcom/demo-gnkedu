@@ -94,14 +94,14 @@ export default function InfoPage() {
       </div>
 
       {/* Bottom CTA card */}
-      <div className="p-6 rounded-2xl bg-indigo-50 border border-indigo-100 text-center space-y-4">
+      <div className="p-6 rounded-2xl bg-brand-primary-light border border-brand-primary-light text-center space-y-4">
         <h4 className="text-sm font-heading font-bold text-indigo-950">Have another question?</h4>
         <p className="text-xs text-indigo-800">We are responsive on WhatsApp to clear your custom assignment doubts.</p>
         <a
           href="https://wa.me/919352483446"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs tracking-wider uppercase transition-colors"
+          className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-semibold text-xs tracking-wider uppercase transition-colors"
         >
           <span>Chat on WhatsApp</span>
           <ArrowRight className="h-3.5 w-3.5" />

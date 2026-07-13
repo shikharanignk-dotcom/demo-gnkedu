@@ -5,8 +5,9 @@
   --color-bg-light: #ffffff;
   --color-bg-page: #f8fafc;
   --color-bg-card: #ffffff;
-  --color-brand-primary: #4f46e5;
-  --color-brand-primary-hover: #4338ca;
+  --color-brand-primary: var(--dynamic-brand-color, #4f46e5);
+  --color-brand-primary-hover: var(--dynamic-brand-hover, #4338ca);
+  --color-brand-primary-light: var(--dynamic-brand-light, #f5f3ff);
   --color-brand-secondary: #0ea5e9;
   --color-text-main: #0f172a;
   --color-text-muted: #64748b;

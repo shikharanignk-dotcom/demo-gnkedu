@@ -131,7 +131,7 @@ export default function VideosPage() {
 
               {/* Info details */}
               <div className="px-5 space-y-2">
-                <span className="text-[9px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 font-bold border border-indigo-100">
+                <span className="text-[9px] px-2 py-0.5 rounded bg-brand-primary-light text-brand-primary font-bold border border-brand-primary-light">
                   {vid.category || "Video Demo"}
                 </span>
                 <h3 className="text-xs sm:text-sm font-heading font-bold text-slate-900 pt-1 leading-snug">

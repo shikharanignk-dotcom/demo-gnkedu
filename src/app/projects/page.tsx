@@ -153,7 +153,7 @@ export default function ProjectsPage() {
                     setActiveProject(proj);
                     setGalleryIdx(0);
                   }}
-                  className="flex-1 text-center py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                  className="flex-1 text-center py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
                 >
                   View Details
                 </button>
@@ -198,7 +198,7 @@ export default function ProjectsPage() {
               </div>
               <button
                 onClick={() => setActiveProject(null)}
-                className="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg bg-brand-primary-light hover:bg-indigo-100 text-brand-primary transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -258,7 +258,7 @@ export default function ProjectsPage() {
 
                   <div className="space-y-1">
                     <h4 className="text-[10px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1">
-                      <Layers className="h-3.5 w-3.5 text-indigo-600" />
+                      <Layers className="h-3.5 w-3.5 text-brand-primary" />
                       <span>Technologies Used</span>
                     </h4>
                     <div className="flex gap-1.5 flex-wrap">
@@ -279,7 +279,7 @@ export default function ProjectsPage() {
               {activeProject.youtube_url && (
                 <div className="space-y-2 pt-4 border-t border-slate-100">
                   <h4 className="text-[10px] font-bold text-slate-850 uppercase tracking-wider flex items-center gap-1">
-                    <Video className="h-3.5 w-3.5 text-indigo-600" />
+                    <Video className="h-3.5 w-3.5 text-brand-primary" />
                     <span>Project Demo Video</span>
                   </h4>
                   <div className="relative aspect-video max-w-xl bg-black rounded-xl overflow-hidden border border-slate-200 mx-auto">
@@ -298,7 +298,7 @@ export default function ProjectsPage() {
             {/* Footer */}
             <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row gap-3 items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Award className="h-4 w-4 text-indigo-600" />
+                <Award className="h-4 w-4 text-brand-primary" />
                 <span className="text-[10px] text-slate-500 text-center sm:text-left">
                   Includes full report document, local setup instructions, and walkthrough.
                 </span>
@@ -318,7 +318,7 @@ export default function ProjectsPage() {
                   href={`https://wa.me/919352483446?text=Hi, I am interested in project: ${encodeURIComponent(activeProject.title)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-1 sm:flex-none text-center px-5 py-2 rounded-xl bg-indigo-600 text-white text-[10px] font-bold tracking-wider uppercase hover:bg-indigo-700 transition-colors"
+                  className="flex-1 sm:flex-none text-center px-5 py-2 rounded-xl bg-brand-primary text-white text-[10px] font-bold tracking-wider uppercase hover:bg-brand-primary-hover transition-colors"
                 >
                   Order Project
                 </a>

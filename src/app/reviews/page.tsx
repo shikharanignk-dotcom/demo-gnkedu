@@ -76,7 +76,7 @@ export default function ReviewsPage() {
 
         {/* Verified Badges */}
         <div className="text-center space-y-1 border-b sm:border-b-0 sm:border-r border-slate-100 pb-4 sm:pb-0">
-          <p className="text-2xl sm:text-3xl font-heading font-bold text-indigo-600">100%</p>
+          <p className="text-2xl sm:text-3xl font-heading font-bold text-brand-primary">100%</p>
           <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wider">Verified Orders</p>
           <p className="text-[10px] text-text-muted max-w-[180px] mx-auto">
             Reviews represent real delivered handwriting assignment sheets.
@@ -85,7 +85,7 @@ export default function ReviewsPage() {
 
         {/* Student Satisfaction */}
         <div className="text-center space-y-1">
-          <p className="text-2xl sm:text-3xl font-heading font-bold text-indigo-600">
+          <p className="text-2xl sm:text-3xl font-heading font-bold text-brand-primary">
             {stats.count > 0 ? Math.round((stats.fiveStar / stats.count) * 100) : 100}%
           </p>
           <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wider">5-Star Quality</p>
@@ -129,7 +129,7 @@ export default function ReviewsPage() {
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-4">
               <div className="flex items-center gap-1">
-                <GraduationCap className="h-4 w-4 text-indigo-600" />
+                <GraduationCap className="h-4 w-4 text-brand-primary" />
                 <span className="text-[10px] font-bold text-slate-900">
                   {rev.student_name}
                 </span>

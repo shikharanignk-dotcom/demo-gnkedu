@@ -59,8 +59,8 @@ export function Navbar() {
       <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex max-w-7xl h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/omgnk" className="flex items-center gap-2 font-heading text-base font-bold tracking-tight text-slate-900">
-            <ShieldCheck className="h-5 w-5 text-indigo-600" />
-            Guru Nanak Photostat <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-200">Admin</span>
+            <ShieldCheck className="h-5 w-5 text-brand-primary" />
+            Guru Nanak Photostat <span className="text-[10px] px-2 py-0.5 rounded bg-brand-primary-light text-brand-primary border border-brand-primary-light">Admin</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/" className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors">
@@ -78,8 +78,8 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-1.5 font-heading text-lg font-extrabold tracking-tight text-slate-900">
-            <CheckSquare className="h-5 w-5 text-indigo-600" />
-            GNK <span className="text-indigo-600 font-medium">Demos</span>
+            <CheckSquare className="h-5 w-5 text-brand-primary" />
+            GNK <span className="text-brand-primary font-medium">Demos</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -90,8 +90,8 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`text-xs font-semibold transition-colors hover:text-indigo-600 ${
-                    isActive ? "text-indigo-600 font-bold" : "text-slate-500"
+                  className={`text-xs font-semibold transition-colors hover:text-brand-primary ${
+                    isActive ? "text-brand-primary font-bold" : "text-slate-500"
                   }`}
                 >
                   {item.label}
@@ -106,7 +106,7 @@ export function Navbar() {
               href={`https://wa.me/${phone}`}
               target="_blank"
               rel="noreferrer"
-              className="text-xs px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 shadow-md font-semibold transition-all"
+              className="text-xs px-4 py-2 rounded-full bg-brand-primary text-white hover:bg-brand-primary-hover shadow-md font-semibold transition-all"
             >
               Order Now
             </a>
@@ -136,7 +136,7 @@ export function Navbar() {
                   onClick={() => setIsOpen(false)}
                   className={`block px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
                     isActive
-                      ? "bg-indigo-50 text-indigo-600"
+                      ? "bg-brand-primary-light text-brand-primary"
                       : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
@@ -149,7 +149,7 @@ export function Navbar() {
                 href="https://wa.me/919352483446"
                 target="_blank"
                 rel="noreferrer"
-                className="block w-full py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-center font-semibold text-sm transition-all"
+                className="block w-full py-2 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white text-center font-semibold text-sm transition-all"
               >
                 Order on WhatsApp
               </a>

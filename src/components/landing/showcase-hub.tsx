@@ -125,12 +125,12 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
           className={`w-full px-4 py-2 text-center text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer border-b hover:opacity-90 transition-all ${
             latestNotice.is_important 
               ? "bg-amber-50 text-amber-800 border-amber-200" 
-              : "bg-indigo-50 text-indigo-700 border-indigo-100"
+              : "bg-brand-primary-light text-indigo-700 border-brand-primary-light"
           }`}
         >
           <span className="flex h-2 w-2 relative shrink-0">
-            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${latestNotice.is_important ? "bg-amber-500" : "bg-indigo-500"}`}></span>
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${latestNotice.is_important ? "bg-amber-600" : "bg-indigo-600"}`}></span>
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${latestNotice.is_important ? "bg-amber-500" : "bg-brand-primary-light0"}`}></span>
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${latestNotice.is_important ? "bg-amber-600" : "bg-brand-primary"}`}></span>
           </span>
           <span className="truncate">
             📢 <span className="font-bold uppercase text-[10px] tracking-wider shrink-0 bg-white/60 px-1.5 py-0.5 rounded border border-current mr-1">{latestNotice.category || "Bulletin"}</span> 
@@ -154,7 +154,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
               href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMsg)}`}
               target="_blank"
               rel="noreferrer"
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase shadow-sm flex items-center gap-1.5 transition-all"
+              className="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover text-white font-bold text-xs uppercase shadow-sm flex items-center gap-1.5 transition-all"
             >
               <MessageSquare className="h-4 w-4 fill-white stroke-none" />
               <span>WhatsApp Inquiry</span>
@@ -184,7 +184,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                   setSelectedType("all");
                 }}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  isActive ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
+                  isActive ? "bg-white text-brand-primary shadow-sm" : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -270,7 +270,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                 <div className="p-3 flex-1 flex flex-col justify-between space-y-2">
                   <div className="space-y-0.5">
                     {item.category && (
-                      <span className="text-[7px] px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-100 text-indigo-600 font-bold uppercase">
+                      <span className="text-[7px] px-1.5 py-0.5 rounded bg-brand-primary-light border border-brand-primary-light text-brand-primary font-bold uppercase">
                         {item.category}
                       </span>
                     )}
@@ -294,7 +294,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                         setViewerItem(item);
                         setZoom(100);
                       }}
-                      className="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      className="flex-1 py-1.5 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
                     >
                       View PDF Sample
                     </button>
@@ -354,7 +354,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                         setActiveProject(proj);
                         setGalleryIdx(0);
                       }}
-                      className="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      className="flex-1 py-1.5 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
                     >
                       View Screens & Video
                     </button>
@@ -415,7 +415,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                   </div>
                   <div className="px-3 space-y-0.5">
                     {vid.category && (
-                      <span className="text-[7px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold uppercase">
+                      <span className="text-[7px] px-1.5 py-0.5 rounded bg-brand-primary-light text-brand-primary border border-brand-primary-light font-bold uppercase">
                         {vid.category}
                       </span>
                     )}
@@ -451,7 +451,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
               key={item.id}
               onClick={item.action}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 cursor-pointer transition-all ${
-                isSelected ? "text-indigo-600 scale-105" : "text-slate-400 hover:text-slate-650"
+                isSelected ? "text-brand-primary scale-105" : "text-slate-400 hover:text-slate-650"
               }`}
             >
               <Icon className="h-4.5 w-4.5 shrink-0" />
@@ -467,7 +467,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
           <div className="relative w-full max-w-sm rounded-xl bg-white border border-slate-200 shadow-xl overflow-hidden flex flex-col">
             <div className="flex justify-between items-center px-4 py-3 border-b border-slate-100 bg-slate-50">
               <span className={`text-[8px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                activeNotice.is_important ? "bg-amber-100 text-amber-800" : "bg-indigo-50 text-indigo-700"
+                activeNotice.is_important ? "bg-amber-100 text-amber-800" : "bg-brand-primary-light text-indigo-700"
               }`}>
                 {activeNotice.category}
               </span>
@@ -512,7 +512,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                 {viewerItem.file_urls?.[0] && (
                   <a href={viewerItem.file_urls[0]} target="_blank" rel="noreferrer" download className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700"><Download className="h-3.5 w-3.5" /></a>
                 )}
-                <button onClick={() => setViewerItem(null)} className="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 cursor-pointer"><X className="h-4 w-4" /></button>
+                <button onClick={() => setViewerItem(null)} className="p-1.5 rounded-lg bg-brand-primary-light hover:bg-indigo-100 text-brand-primary cursor-pointer"><X className="h-4 w-4" /></button>
               </div>
             </div>
 
@@ -544,7 +544,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                 href={`https://wa.me/${whatsappPhone}?text=Hi, I am interested in ordering assignment: ${encodeURIComponent(viewerItem.title)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-5 py-2 rounded-lg bg-indigo-600 text-white font-bold text-[9px] uppercase text-center hover:bg-indigo-700"
+                className="w-full sm:w-auto px-5 py-2 rounded-lg bg-brand-primary text-white font-bold text-[9px] uppercase text-center hover:bg-brand-primary-hover"
               >
                 Inquire on WhatsApp
               </a>
@@ -562,7 +562,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                 <span className="text-[7px] px-1.5 py-0.5 rounded bg-sky-50 text-sky-600 border border-sky-100 font-bold">{activeProject.category}</span>
                 <h2 className="text-xs sm:text-sm font-heading font-bold text-slate-900 pt-1 leading-snug">{activeProject.title}</h2>
               </div>
-              <button onClick={() => setActiveProject(null)} className="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 cursor-pointer"><X className="h-4 w-4" /></button>
+              <button onClick={() => setActiveProject(null)} className="p-1.5 rounded-lg bg-brand-primary-light hover:bg-indigo-100 text-brand-primary cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
@@ -632,7 +632,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                 href={`https://wa.me/${whatsappPhone}?text=Hi, I want to order project: ${encodeURIComponent(activeProject.title)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-4.5 py-1.5 rounded-lg bg-indigo-600 text-white text-[9px] font-bold uppercase hover:bg-indigo-700"
+                className="px-4.5 py-1.5 rounded-lg bg-brand-primary text-white text-[9px] font-bold uppercase hover:bg-brand-primary-hover"
               >
                 Order Project
               </a>
