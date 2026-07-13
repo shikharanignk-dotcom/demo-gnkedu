@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Star, GraduationCap, CheckCircle, MessageSquare } from "lucide-react";
+import { Star, GraduationCap, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const FALLBACK_REVIEWS = [
@@ -73,7 +73,6 @@ export default function ReviewsPage() {
     fetchReviews();
   }, []);
 
-  // Compute stats metrics
   const stats = useMemo(() => {
     if (reviews.length === 0) return { avg: 5.0, count: 0, fiveStar: 0 };
     const sum = reviews.reduce((acc, curr) => acc + curr.rating, 0);
@@ -87,96 +86,96 @@ export default function ReviewsPage() {
   }, [reviews]);
 
   return (
-    <div className="w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+    <div className="w-full mx-auto max-w-5xl px-4 py-8 space-y-12 bg-bg-page">
       {/* Page Header */}
-      <div className="space-y-4 text-center">
-        <h1 className="text-3xl sm:text-5xl font-heading font-extrabold text-white tracking-tight">
+      <div className="space-y-2 text-center">
+        <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-slate-900 tracking-tight">
           Student <span className="text-gradient">Reviews</span>
         </h1>
-        <p className="text-sm sm:text-base text-text-muted max-w-xl mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto leading-relaxed">
           Read verified testimonials from students who scored excellent marks using GNK Edusolution support.
         </p>
       </div>
 
       {/* Review Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8 rounded-2xl glass-panel items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6 rounded-2xl bg-white border border-slate-100 shadow-premium items-center">
         {/* Rating Score */}
-        <div className="text-center space-y-2 border-b md:border-b-0 md:border-r border-white/5 pb-6 md:pb-0">
-          <p className="text-5xl sm:text-6xl font-heading font-extrabold text-white">{stats.avg}</p>
-          <div className="flex justify-center text-amber-400 gap-1">
+        <div className="text-center space-y-1.5 border-b sm:border-b-0 sm:border-r border-slate-100 pb-4 sm:pb-0">
+          <p className="text-4xl sm:text-5xl font-heading font-extrabold text-slate-900">{stats.avg}</p>
+          <div className="flex justify-center text-amber-400 gap-0.5">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`h-5 w-5 fill-amber-400 stroke-none ${
+                className={`h-4.5 w-4.5 fill-amber-400 stroke-none ${
                   i < Math.round(stats.avg) ? "opacity-100" : "opacity-30"
                 }`}
               />
             ))}
           </div>
-          <p className="text-xs text-text-muted font-medium">Out of 5 stars based on reviews</p>
+          <p className="text-[10px] text-text-muted font-medium">Average student rating score</p>
         </div>
 
         {/* Verified Badges */}
-        <div className="text-center space-y-2 border-b md:border-b-0 md:border-r border-white/5 pb-6 md:pb-0">
-          <p className="text-3xl sm:text-4xl font-heading font-bold text-gradient">100%</p>
-          <p className="text-xs sm:text-sm font-semibold text-white uppercase tracking-wider">Verified Orders</p>
-          <p className="text-xs text-text-muted max-w-[200px] mx-auto">
-            Every review represents real homework help and assignment delivery.
+        <div className="text-center space-y-1 border-b sm:border-b-0 sm:border-r border-slate-100 pb-4 sm:pb-0">
+          <p className="text-2xl sm:text-3xl font-heading font-bold text-indigo-600">100%</p>
+          <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wider">Verified Orders</p>
+          <p className="text-[10px] text-text-muted max-w-[180px] mx-auto">
+            Reviews represent real delivered handwriting assignment sheets.
           </p>
         </div>
 
         {/* Student Satisfaction */}
-        <div className="text-center space-y-2">
-          <p className="text-3xl sm:text-4xl font-heading font-bold text-gradient">
+        <div className="text-center space-y-1">
+          <p className="text-2xl sm:text-3xl font-heading font-bold text-indigo-600">
             {stats.count > 0 ? Math.round((stats.fiveStar / stats.count) * 100) : 100}%
           </p>
-          <p className="text-xs sm:text-sm font-semibold text-white uppercase tracking-wider">5-Star Rating</p>
-          <p className="text-xs text-text-muted max-w-[200px] mx-auto">
-            Majority of customers report scoring 85%+ in their final submissions.
+          <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wider">5-Star Quality</p>
+          <p className="text-[10px] text-text-muted max-w-[180px] mx-auto">
+            Students scoring 85%+ in final submissions.
           </p>
         </div>
       </div>
 
       {/* Grid of Student Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {reviews.map((rev) => (
           <div
             key={rev.id}
-            className="p-6 rounded-2xl glass-panel flex flex-col justify-between hover:shadow-xl hover:shadow-brand-purple/5 transition-all duration-300"
+            className="p-5 rounded-2xl bg-white border border-slate-100 shadow-premium flex flex-col justify-between hover:shadow-lg transition-all"
           >
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Rating stars & verified badge */}
               <div className="flex items-center justify-between">
                 <div className="flex text-amber-400 gap-0.5">
                   {[...Array(rev.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-amber-400 stroke-none" />
+                    <Star key={i} className="h-3.5 w-3.5 fill-amber-400 stroke-none" />
                   ))}
                   {[...Array(5 - rev.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-white/20 stroke-none" />
+                    <Star key={i} className="h-3.5 w-3.5 text-slate-200 stroke-none" />
                   ))}
                 </div>
                 {rev.verified && (
-                  <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-brand-blue/10 text-brand-blue border border-brand-blue/20 font-semibold uppercase">
-                    <CheckCircle className="h-3 w-3 fill-brand-blue stroke-bg-dark" />
+                  <span className="flex items-center gap-1 text-[8px] px-2 py-0.5 rounded bg-sky-50 text-sky-600 border border-sky-100 font-bold uppercase">
+                    <CheckCircle className="h-2.5 w-2.5 fill-sky-600 stroke-white" />
                     <span>Verified</span>
                   </span>
                 )}
               </div>
 
               {/* Text content */}
-              <p className="text-sm text-slate-300 italic leading-relaxed">
+              <p className="text-xs text-slate-600 italic leading-relaxed">
                 &ldquo;{rev.review_text}&rdquo;
               </p>
             </div>
 
-            <div className="pt-4 border-t border-white/5 flex items-center justify-between mt-6">
-              <div className="flex items-center gap-1.5">
-                <GraduationCap className="h-4 w-4 text-brand-purple" />
-                <span className="text-xs font-semibold text-white">
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-4">
+              <div className="flex items-center gap-1">
+                <GraduationCap className="h-4 w-4 text-indigo-600" />
+                <span className="text-[10px] font-bold text-slate-900">
                   {rev.student_name}
                 </span>
               </div>
-              <span className="text-[10px] text-text-muted font-medium">
+              <span className="text-[9px] text-text-muted font-medium">
                 {rev.university}
               </span>
             </div>

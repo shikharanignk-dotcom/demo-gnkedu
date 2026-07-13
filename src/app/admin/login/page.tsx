@@ -14,7 +14,6 @@ export default function AdminLoginPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    // Redirect if already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         router.replace("/admin");
@@ -49,57 +48,54 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="w-full flex-1 flex items-center justify-center py-20 px-4">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-brand-purple/10 rounded-full blur-[100px] pointer-events-none"></div>
-
-      <div className="w-full max-w-md p-8 rounded-2xl glass-panel space-y-6 relative z-10">
+    <div className="w-full flex-1 flex items-center justify-center py-16 px-4 bg-bg-page">
+      <div className="w-full max-w-sm p-6 rounded-2xl bg-white border border-slate-100 shadow-premium space-y-6 relative z-10">
         {/* Header brand */}
-        <div className="text-center space-y-2">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-brand-purple/10 flex items-center justify-center text-brand-purple">
-            <ShieldCheck className="h-6 w-6" />
+        <div className="text-center space-y-1.5">
+          <div className="mx-auto h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+            <ShieldCheck className="h-5.5 w-5.5" />
           </div>
-          <h2 className="text-2xl font-heading font-extrabold text-white">Admin Portal</h2>
-          <p className="text-xs text-text-muted">
+          <h2 className="text-xl font-heading font-extrabold text-slate-900">Admin Portal</h2>
+          <p className="text-[10px] text-text-muted">
             Log in to manage showcase assignments, projects, videos, and settings.
           </p>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="p-3 text-xs rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-medium">
+          <div className="p-3 text-[10px] rounded-xl bg-red-50 border border-red-200 text-red-600 font-medium">
             {error}
           </div>
         )}
 
         {/* Login Form */}
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs text-slate-300 font-medium">Email Address</label>
+        <form onSubmit={handleLogin} className="space-y-3.5">
+          <div className="space-y-1">
+            <label className="text-[10px] text-slate-700 font-bold uppercase tracking-wider">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-text-muted" />
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-text-muted" />
               <input
                 type="email"
                 required
                 placeholder="admin@gnkedu.online"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-dark/50 border border-white/5 text-sm text-white focus:outline-none focus:border-brand-purple/50 transition-colors"
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs text-slate-300 font-medium">Password</label>
+          <div className="space-y-1">
+            <label className="text-[10px] text-slate-700 font-bold uppercase tracking-wider">Password</label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-text-muted" />
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-text-muted" />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-dark/50 border border-white/5 text-sm text-white focus:outline-none focus:border-brand-purple/50 transition-colors"
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
           </div>
@@ -107,17 +103,17 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 mt-2 rounded-xl bg-gradient-to-r from-brand-purple to-brand-blue text-white font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+            className="w-full py-3 mt-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 disabled:opacity-50 transition-all cursor-pointer"
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 <span>Authenticating...</span>
               </>
             ) : (
               <>
                 <span>Sign In</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5" />
               </>
             )}
           </button>

@@ -106,3 +106,22 @@ CREATE POLICY "Allow admin full access for site_settings" ON site_settings FOR A
 
 CREATE POLICY "Allow public insert access for page_views" ON page_views FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow admin read access for page_views" ON page_views FOR SELECT TO authenticated USING (true);
+
+-- 7. Create information/announcements table
+CREATE TABLE IF NOT EXISTS information (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  category TEXT, -- Notice, Instruction, FAQ
+  is_important BOOLEAN DEFAULT false,
+  published BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS for information
+ALTER TABLE information ENABLE ROW LEVEL SECURITY;
+
+-- Create Policies for information
+CREATE POLICY "Allow public read access for information" ON information FOR SELECT USING (published = true);
+CREATE POLICY "Allow admin full access for information" ON information FOR ALL TO authenticated USING (true);

@@ -1,44 +1,44 @@
 import Link from "next/link";
-import { CheckSquare, MessageCircle, Mail, Phone, Clock } from "lucide-react";
+import { CheckSquare, Mail, Phone, Clock } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-white/5 bg-bg-dark/40 py-12">
+    <footer className="w-full border-t border-slate-200 bg-slate-50 py-10 mt-auto">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Info */}
-          <div className="md:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2 font-heading text-lg font-bold text-white">
-              <CheckSquare className="h-5 w-5 text-brand-purple" />
-              GNK <span className="text-gradient">Demos</span>
+          <div className="md:col-span-2 space-y-3">
+            <Link href="/" className="flex items-center gap-2 font-heading text-lg font-bold text-slate-900">
+              <CheckSquare className="h-5 w-5 text-indigo-600" />
+              GNK <span className="text-indigo-600 font-medium">Demos</span>
             </Link>
-            <p className="text-sm text-text-muted max-w-sm leading-relaxed">
+            <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
               Premium showcase of our handwriting assignments, academic projects, coding demos, and course reviews. Verified trust and quality service for students.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Navigation</h4>
-            <ul className="space-y-2">
+            <h4 className="text-xs font-bold text-slate-900 tracking-wider uppercase mb-3">Navigation</h4>
+            <ul className="space-y-1.5">
               <li>
-                <Link href="/assignments" className="text-sm text-text-muted hover:text-white transition-colors">
+                <Link href="/assignments" className="text-xs text-slate-500 hover:text-indigo-600 transition-colors">
                   Assignments
                 </Link>
               </li>
               <li>
-                <Link href="/projects" className="text-sm text-text-muted hover:text-white transition-colors">
+                <Link href="/projects" className="text-xs text-slate-500 hover:text-indigo-600 transition-colors">
                   Projects
                 </Link>
               </li>
               <li>
-                <Link href="/videos" className="text-sm text-text-muted hover:text-white transition-colors">
+                <Link href="/videos" className="text-xs text-slate-500 hover:text-indigo-600 transition-colors">
                   Video Demos
                 </Link>
               </li>
               <li>
-                <Link href="/reviews" className="text-sm text-text-muted hover:text-white transition-colors">
-                  Student Reviews
+                <Link href="/info" className="text-xs text-slate-500 hover:text-indigo-600 transition-colors">
+                  Important Info
                 </Link>
               </li>
             </ul>
@@ -46,18 +46,18 @@ export function Footer() {
 
           {/* Contact Details */}
           <div>
-            <h4 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Contact Info</h4>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-2 text-sm text-text-muted">
-                <Phone className="h-4 w-4 text-brand-blue" />
+            <h4 className="text-xs font-bold text-slate-900 tracking-wider uppercase mb-3">Contact Info</h4>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2 text-xs text-slate-500">
+                <Phone className="h-3.5 w-3.5 text-indigo-600" />
                 <span>+91 93524 83446</span>
               </li>
-              <li className="flex items-center gap-2 text-sm text-text-muted">
-                <Mail className="h-4 w-4 text-brand-blue" />
+              <li className="flex items-center gap-2 text-xs text-slate-500">
+                <Mail className="h-3.5 w-3.5 text-indigo-600" />
                 <span>onlineservicemart@gmail.com</span>
               </li>
-              <li className="flex items-center gap-2 text-xs text-text-muted">
-                <Clock className="h-4 w-4 text-brand-purple" />
+              <li className="flex items-center gap-2 text-[10px] text-slate-400">
+                <Clock className="h-3.5 w-3.5 text-slate-400" />
                 <span>Response in minutes (9 AM - 9 PM)</span>
               </li>
             </ul>
@@ -65,12 +65,12 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-text-muted">
+        <div className="mt-8 pt-6 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-[10px] text-slate-400">
             &copy; {new Date().getFullYear()} GNK Edusolution. All rights reserved.
           </p>
           <div className="flex gap-4">
-            <Link href="/admin/login" className="text-xs text-text-muted/60 hover:text-brand-purple transition-colors">
+            <Link href="/admin/login" className="text-[10px] text-slate-400 hover:text-indigo-600 transition-colors">
               Admin Login
             </Link>
           </div>

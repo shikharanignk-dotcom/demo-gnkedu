@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Search, Filter, BookOpen, X, Download, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { Search, BookOpen, X, Download, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const FALLBACK_ASSIGNMENTS = [
@@ -14,13 +14,13 @@ const FALLBACK_ASSIGNMENTS = [
     university: "IGNOU",
     assignment_type: "handwritten",
     thumbnail_url: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=400",
-    file_urls: ["https://pdfobject.com/pdf/sample.pdf"], // Demo sample PDF
+    file_urls: ["https://pdfobject.com/pdf/sample.pdf"],
     category: "DECE Diploma",
   },
   {
     id: "a2",
     type: "assignment",
-    title: "BCA Computer Networks Typed assignment",
+    title: "BCA Computer Networks Typed Assignment",
     subject: "Computer Networks",
     semester: "Semester 3",
     university: "IP University",
@@ -89,7 +89,6 @@ export default function AssignmentsPage() {
     fetchAssignments();
   }, []);
 
-  // Filter Categories dynamically from items
   const categories = useMemo(() => {
     const set = new Set<string>();
     items.forEach((item) => {
@@ -98,7 +97,6 @@ export default function AssignmentsPage() {
     return Array.from(set);
   }, [items]);
 
-  // Filter logic
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
       const matchSearch =
@@ -114,28 +112,28 @@ export default function AssignmentsPage() {
   }, [items, search, selectedCategory, selectedType]);
 
   return (
-    <div className="w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+    <div className="w-full mx-auto max-w-5xl px-4 py-8 space-y-8 bg-bg-page">
       {/* Header */}
-      <div className="space-y-4 text-center">
-        <h1 className="text-3xl sm:text-5xl font-heading font-extrabold text-white tracking-tight">
+      <div className="space-y-2 text-center">
+        <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-slate-900 tracking-tight">
           Assignment <span className="text-gradient">Demos</span>
         </h1>
-        <p className="text-sm sm:text-base text-text-muted max-w-xl mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto leading-relaxed">
           Verify handwriting formatting, margins, pen strokes, and layout presentation sheets before placing your order.
         </p>
       </div>
 
       {/* Filters Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-2xl glass-panel">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-white border border-slate-100 shadow-premium">
         {/* Search */}
-        <div className="relative md:col-span-2">
-          <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-text-muted" />
+        <div className="relative sm:col-span-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-text-muted" />
           <input
             type="text"
-            placeholder="Search by subject or title..."
+            placeholder="Search subject/title..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-dark/50 border border-white/5 text-sm text-white focus:outline-none focus:border-brand-purple/50 transition-colors"
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
           />
         </div>
 
@@ -144,7 +142,7 @@ export default function AssignmentsPage() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-bg-dark/50 border border-white/5 text-sm text-white focus:outline-none focus:border-brand-purple/50 transition-colors appearance-none cursor-pointer"
+            className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 transition-colors appearance-none cursor-pointer"
           >
             <option value="all">All Courses</option>
             {categories.map((cat) => (
@@ -160,7 +158,7 @@ export default function AssignmentsPage() {
           <select
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-bg-dark/50 border border-white/5 text-sm text-white focus:outline-none focus:border-brand-purple/50 transition-colors appearance-none cursor-pointer"
+            className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 transition-colors appearance-none cursor-pointer"
           >
             <option value="all">All Formats</option>
             <option value="handwritten">Handwritten Sheets</option>
@@ -171,53 +169,53 @@ export default function AssignmentsPage() {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredItems.map((item) => (
           <div
             key={item.id}
-            className="rounded-2xl glass-panel glass-panel-hover overflow-hidden flex flex-col justify-between"
+            className="rounded-2xl bg-white border border-slate-100 shadow-premium hover:shadow-lg transition-all overflow-hidden flex flex-col justify-between"
           >
             {/* Card Thumbnail */}
-            <div className="relative aspect-video bg-slate-900 overflow-hidden group">
+            <div className="relative aspect-video bg-slate-100 overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={item.thumbnail_url}
                 alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover"
               />
-              <span className="absolute top-3 left-3 px-2 py-0.5 rounded bg-bg-dark/85 text-[10px] uppercase font-semibold text-brand-purple border border-brand-purple/20">
+              <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-slate-900/80 text-[8px] uppercase font-bold text-white tracking-wider">
                 {item.assignment_type}
               </span>
             </div>
 
             {/* Info */}
-            <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-              <div className="space-y-2">
-                <span className="text-[10px] px-2 py-0.5 rounded bg-brand-purple/10 text-brand-purple border border-brand-purple/20 font-semibold tracking-wider uppercase">
+            <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+              <div className="space-y-1.5">
+                <span className="text-[9px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold tracking-wider uppercase">
                   {item.category}
                 </span>
-                <h3 className="text-base font-heading font-semibold text-white pt-2 leading-snug">
+                <h3 className="text-sm font-heading font-bold text-slate-900 pt-1 leading-snug">
                   {item.title}
                 </h3>
-                <p className="text-xs text-text-muted">
-                  <span className="font-medium text-slate-300">Subject:</span> {item.subject}
+                <p className="text-[10px] text-slate-500">
+                  <span className="font-semibold text-slate-700">Subject:</span> {item.subject}
                 </p>
-                <p className="text-xs text-text-muted">
-                  <span className="font-medium text-slate-300">Semester:</span> {item.semester}
+                <p className="text-[10px] text-slate-500">
+                  <span className="font-semibold text-slate-700">Semester:</span> {item.semester}
                 </p>
-                <p className="text-xs text-text-muted">
-                  <span className="font-medium text-slate-300">University:</span> {item.university}
+                <p className="text-[10px] text-slate-500">
+                  <span className="font-semibold text-slate-700">University:</span> {item.university}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-white/5 flex items-center gap-3">
+              <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
                     setViewerItem(item);
                     setZoom(100);
                   }}
-                  className="flex-1 text-center py-2.5 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white text-xs font-semibold shadow-md shadow-brand-purple/10 transition-colors cursor-pointer"
+                  className="flex-1 text-center py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
                 >
                   View Sample
                 </button>
@@ -225,7 +223,7 @@ export default function AssignmentsPage() {
                   href={`https://wa.me/919352483446?text=Hi, I want to inquire about assignment: ${encodeURIComponent(item.title)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-medium transition-colors"
+                  className="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase tracking-wider transition-colors"
                 >
                   Inquire
                 </a>
@@ -237,54 +235,51 @@ export default function AssignmentsPage() {
 
       {/* Empty State */}
       {filteredItems.length === 0 && (
-        <div className="text-center py-16 space-y-4 rounded-2xl glass-panel">
-          <BookOpen className="h-10 w-10 text-text-muted mx-auto animate-bounce" />
-          <p className="text-sm text-text-muted">No assignments matched your search filters.</p>
+        <div className="text-center py-12 space-y-3 rounded-2xl bg-white border border-slate-100 shadow-premium">
+          <BookOpen className="h-8 w-8 text-text-muted mx-auto animate-bounce" />
+          <p className="text-xs text-text-muted">No assignments matched your search filters.</p>
         </div>
       )}
 
-      {/* 🖥️ Beautiful PDF Viewer Modal */}
+      {/* 🖥️ PDF Viewer Modal */}
       {viewerItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg-dark/95 backdrop-blur-sm">
-          <div className="relative w-full max-w-4xl h-[85vh] rounded-2xl glass-panel overflow-hidden flex flex-col justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-sm">
+          <div className="relative w-full max-w-3xl h-[85vh] rounded-2xl bg-white border border-slate-100 shadow-xl overflow-hidden flex flex-col justify-between">
             {/* Modal Header */}
-            <div className="flex justify-between items-center px-6 py-4 border-b border-white/5 bg-bg-dark/50">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-slate-50">
               <div className="space-y-0.5">
-                <h2 className="text-sm sm:text-base font-heading font-bold text-white leading-tight">
+                <h2 className="text-xs sm:text-sm font-heading font-bold text-slate-900 leading-tight">
                   {viewerItem.title}
                 </h2>
-                <p className="text-[10px] sm:text-xs text-text-muted">
+                <p className="text-[8px] sm:text-[10px] text-slate-500">
                   Format: {viewerItem.assignment_type} &bull; University: {viewerItem.university}
                 </p>
               </div>
 
               {/* Control panel & close button */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 {/* Zoom Controls */}
-                <div className="hidden sm:flex items-center gap-2 border border-white/5 rounded-lg bg-bg-dark/50 px-2 py-1">
+                <div className="hidden sm:flex items-center gap-1.5 border border-slate-200 rounded-lg bg-white px-1.5 py-0.5">
                   <button
                     onClick={() => setZoom(Math.max(50, zoom - 25))}
-                    className="p-1 rounded hover:bg-white/5 text-text-muted hover:text-white transition-colors"
-                    title="Zoom Out"
+                    className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors"
                   >
-                    <ZoomOut className="h-4 w-4" />
+                    <ZoomOut className="h-3.5 w-3.5" />
                   </button>
-                  <span className="text-[10px] font-mono text-white min-w-[36px] text-center">
+                  <span className="text-[10px] font-mono text-slate-700 min-w-[30px] text-center">
                     {zoom}%
                   </span>
                   <button
                     onClick={() => setZoom(Math.min(200, zoom + 25))}
-                    className="p-1 rounded hover:bg-white/5 text-text-muted hover:text-white transition-colors"
-                    title="Zoom In"
+                    className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors"
                   >
-                    <ZoomIn className="h-4 w-4" />
+                    <ZoomIn className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => setZoom(100)}
-                    className="p-1 rounded hover:bg-white/5 text-text-muted hover:text-white transition-colors"
-                    title="Reset Zoom"
+                    className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors"
                   >
-                    <RotateCcw className="h-4 w-4" />
+                    <RotateCcw className="h-3.5 w-3.5" />
                   </button>
                 </div>
 
@@ -293,31 +288,28 @@ export default function AssignmentsPage() {
                   target="_blank"
                   rel="noreferrer"
                   download
-                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors"
-                  title="Download File"
+                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
                 >
-                  <Download className="h-4.5 w-4.5" />
+                  <Download className="h-4 w-4" />
                 </a>
 
                 <button
                   onClick={() => setViewerItem(null)}
-                  className="p-2 rounded-xl bg-brand-purple/10 hover:bg-brand-purple/20 text-brand-purple transition-colors cursor-pointer"
-                  title="Close Viewer"
+                  className="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors cursor-pointer"
                 >
-                  <X className="h-4.5 w-4.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
             {/* Viewer Content Area */}
-            <div className="flex-1 bg-slate-950 overflow-auto flex items-center justify-center p-4">
+            <div className="flex-1 bg-slate-100 overflow-auto flex items-center justify-center p-3">
               {viewerItem.file_urls?.[0] ? (
                 viewerItem.file_urls[0].endsWith(".pdf") || viewerItem.file_urls[0].includes("sample.pdf") ? (
-                  /* Embed standard PDF Viewer with Zoom styling */
                   <iframe
                     src={`${viewerItem.file_urls[0]}#toolbar=0`}
                     style={{ transform: `scale(${zoom / 100})`, transformOrigin: "center center" }}
-                    className="w-full h-full max-w-3xl border-0 rounded-lg shadow-lg transition-transform duration-100"
+                    className="w-full h-full max-w-2xl border-0 rounded-lg shadow-sm transition-transform duration-100 bg-white"
                   ></iframe>
                 ) : (
                   /* eslint-disable-next-line @next/next/no-img-element */
@@ -325,24 +317,24 @@ export default function AssignmentsPage() {
                     src={viewerItem.file_urls[0]}
                     alt={viewerItem.title}
                     style={{ transform: `scale(${zoom / 100})` }}
-                    className="max-w-full max-h-full object-contain rounded-lg shadow-lg transition-transform duration-100"
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-sm transition-transform duration-100 bg-white"
                   />
                 )
               ) : (
-                <div className="text-center text-text-muted">No sample document uploaded for this assignment.</div>
+                <div className="text-center text-text-muted">No sample document uploaded.</div>
               )}
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-white/5 bg-bg-dark/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <p className="text-xs text-text-muted">
-                Doubt about this assignment? WhatsApp us for direct inquiry support.
+            <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <p className="text-[10px] text-slate-500 text-center sm:text-left">
+                Directly place your order on WhatsApp to get the custom assignment files.
               </p>
               <a
                 href={`https://wa.me/919352483446?text=Hi, I am interested in assignment: ${encodeURIComponent(viewerItem.title)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-6 py-2 rounded-xl bg-gradient-to-r from-brand-purple to-brand-blue text-white font-semibold text-xs tracking-wider uppercase text-center hover:opacity-90 shadow-md shadow-brand-purple/15 transition-all"
+                className="w-full sm:w-auto px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold text-[10px] uppercase text-center hover:bg-indigo-700 shadow-sm transition-all"
               >
                 Inquire on WhatsApp
               </a>
