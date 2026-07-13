@@ -57,6 +57,13 @@ export default async function LandingPage() {
     show_projects: homepageConfig.show_projects !== false,
     show_videos: homepageConfig.show_videos !== false,
     theme_color: homepageConfig.theme_color || "indigo",
+    logo_text: homepageConfig.logo_text || "GNK Demos",
+    assignments_tab_label: homepageConfig.assignments_tab_label || "Handwritten Sheets",
+    projects_tab_label: homepageConfig.projects_tab_label || "College Projects",
+    videos_tab_label: homepageConfig.videos_tab_label || "Video Demos",
+    paper_formats: homepageConfig.paper_formats || "Handwritten sheets, Softcopy PDF, Computer Typed",
+    assignment_item_type_label: homepageConfig.assignment_item_type_label || "Assignment File",
+    project_item_type_label: homepageConfig.project_item_type_label || "College Coding Project",
   };
 
   return (

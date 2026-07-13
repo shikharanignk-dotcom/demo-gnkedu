@@ -24,6 +24,12 @@ export default function AdminDashboardPage() {
     show_projects: true,
     show_videos: true,
     logo_text: "GNK Demos",
+    assignments_tab_label: "Handwritten Sheets",
+    projects_tab_label: "College Projects",
+    videos_tab_label: "Video Demos",
+    paper_formats: "Handwritten sheets, Softcopy PDF, Computer Typed",
+    assignment_item_type_label: "Assignment File",
+    project_item_type_label: "College Coding Project",
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,8 +41,22 @@ export default function AdminDashboardPage() {
   const [formSubject, setFormSubject] = useState("");
   const [formSemester, setFormSemester] = useState("");
   const [formUniversity, setFormUniversity] = useState("");
-  const [formFormat, setFormFormat] = useState("handwritten");
+  const [formFormat, setFormFormat] = useState("");
   const [formCategory, setFormCategory] = useState("");
+
+  useEffect(() => {
+    if (isModalOpen) {
+      const parsedFormats = (homepageConfig.paper_formats || "Handwritten sheets, Softcopy PDF, Computer Typed")
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+      if (parsedFormats.length > 0) {
+        setFormFormat(parsedFormats[0]);
+      } else {
+        setFormFormat("handwritten");
+      }
+    }
+  }, [isModalOpen, homepageConfig.paper_formats]);
   const [formDesc, setFormDesc] = useState("");
   const [formLiveUrl, setFormLiveUrl] = useState("");
   const [formYoutubeUrl, setFormYoutubeUrl] = useState("");
@@ -109,6 +129,12 @@ export default function AdminDashboardPage() {
           show_projects: hc.show_projects !== false,
           show_videos: hc.show_videos !== false,
           logo_text: hc.logo_text || "GNK Demos",
+          assignments_tab_label: hc.assignments_tab_label || "Handwritten Sheets",
+          projects_tab_label: hc.projects_tab_label || "College Projects",
+          videos_tab_label: hc.videos_tab_label || "Video Demos",
+          paper_formats: hc.paper_formats || "Handwritten sheets, Softcopy PDF, Computer Typed",
+          assignment_item_type_label: hc.assignment_item_type_label || "Assignment File",
+          project_item_type_label: hc.project_item_type_label || "College Coding Project",
         });
       }
     } catch (err) {
@@ -617,6 +643,67 @@ export default function AdminDashboardPage() {
                     className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
                   />
                 </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-505 font-medium leading-tight">Assignments Tab Label</label>
+                    <input
+                      type="text"
+                      value={homepageConfig.assignments_tab_label || ""}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, assignments_tab_label: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-505 font-medium leading-tight">Projects Tab Label</label>
+                    <input
+                      type="text"
+                      value={homepageConfig.projects_tab_label || ""}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, projects_tab_label: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-505 font-medium leading-tight">Videos Tab Label</label>
+                    <input
+                      type="text"
+                      value={homepageConfig.videos_tab_label || ""}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, videos_tab_label: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] text-slate-505 font-medium leading-tight">Paper Formats (comma separated list)</label>
+                  <input
+                    type="text"
+                    value={homepageConfig.paper_formats || ""}
+                    onChange={(e) => setHomepageConfig({ ...homepageConfig, paper_formats: e.target.value })}
+                    className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-550 font-medium leading-tight">Assignment Option Label</label>
+                    <input
+                      type="text"
+                      value={homepageConfig.assignment_item_type_label || ""}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, assignment_item_type_label: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-550 font-medium leading-tight">Project Option Label</label>
+                    <input
+                      type="text"
+                      value={homepageConfig.project_item_type_label || ""}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, project_item_type_label: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[9px] text-slate-500 font-medium">Brand Theme Color</label>
@@ -777,8 +864,8 @@ export default function AdminDashboardPage() {
                       onChange={(e) => setFormType(e.target.value as any)}
                       className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
                     >
-                      <option value="assignment">Assignment File</option>
-                      <option value="project">College Coding Project</option>
+                      <option value="assignment">{homepageConfig.assignment_item_type_label || "Assignment File"}</option>
+                      <option value="project">{homepageConfig.project_item_type_label || "College Coding Project"}</option>
                     </select>
                   </div>
 
@@ -835,9 +922,14 @@ export default function AdminDashboardPage() {
                           onChange={(e) => setFormFormat(e.target.value)}
                           className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
                         >
-                          <option value="handwritten">Handwritten sheets</option>
-                          <option value="pdf">Softcopy PDF</option>
-                          <option value="typed">Computer Typed</option>
+                          {(homepageConfig.paper_formats || "Handwritten sheets, Softcopy PDF, Computer Typed")
+                            .split(",")
+                            .map((s: string) => s.trim())
+                            .filter(Boolean)
+                            .map((fmt: string) => (
+                              <option key={fmt} value={fmt}>{fmt}</option>
+                            ))
+                          }
                         </select>
                       </div>
                       <div className="space-y-1">

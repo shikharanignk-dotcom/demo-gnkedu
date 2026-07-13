@@ -16,6 +16,13 @@ interface ShowcaseHubProps {
     show_projects?: boolean;
     show_videos?: boolean;
     theme_color?: string;
+    logo_text?: string;
+    assignments_tab_label?: string;
+    projects_tab_label?: string;
+    videos_tab_label?: string;
+    paper_formats?: string;
+    assignment_item_type_label?: string;
+    project_item_type_label?: string;
   };
 }
 const THEME_COLORS: Record<string, { primary: string; hover: string; light: string; rgb: string }> = {
@@ -42,6 +49,13 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
   const themeColor = settings.theme_color || "indigo";
   const whatsappPhone = settings.whatsapp_number || "919352483446";
   const whatsappMsg = settings.whatsapp_message || "Hello Guru Nanak Photostat, I want to inquire about assignments/projects.";
+
+  const paperFormats = useMemo(() => {
+    return (settings.paper_formats || "Handwritten sheets, Softcopy PDF, Computer Typed")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+  }, [settings.paper_formats]);
 
   // Set the dynamic theme variables on load and when settings change
   useEffect(() => {
@@ -188,9 +202,9 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
       <div className="hidden md:block mx-auto max-w-xl px-4">
         <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/80 gap-1">
           {[
-            { id: "assignments", label: "Handwritten Sheets", icon: BookOpen, active: settings.show_assignments !== false },
-            { id: "projects", label: "College Projects", icon: Globe, active: settings.show_projects !== false },
-            { id: "videos", label: "Video Demos", icon: Video, active: settings.show_videos !== false },
+            { id: "assignments", label: settings.assignments_tab_label || "Handwritten Sheets", icon: BookOpen, active: settings.show_assignments !== false },
+            { id: "projects", label: settings.projects_tab_label || "College Projects", icon: Globe, active: settings.show_projects !== false },
+            { id: "videos", label: settings.videos_tab_label || "Video Demos", icon: Video, active: settings.show_videos !== false },
           ].map((tab) => {
             if (!tab.active) return null;
             const Icon = tab.icon;
@@ -249,9 +263,9 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                 className="px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 cursor-pointer"
               >
                 <option value="all">All Formats</option>
-                <option value="handwritten">Handwritten Sheets</option>
-                <option value="pdf">Softcopy PDF</option>
-                <option value="typed">Computer Typed</option>
+                {paperFormats.map((fmt) => (
+                  <option key={fmt} value={fmt}>{fmt}</option>
+                ))}
               </select>
             </>
           ) : activeTab === "projects" ? (
@@ -459,9 +473,9 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg px-4 py-2.5 flex justify-between items-center select-none safe-bottom">
         {[
           { id: "home", label: "Home", icon: Home, action: () => { setActiveTab("assignments"); setSearch(""); setSelectedCategory("all"); setSelectedType("all"); } },
-          { id: "assignments", label: "Sheets", icon: BookOpen, active: settings.show_assignments !== false, action: () => setActiveTab("assignments") },
-          { id: "projects", label: "Projects", icon: Globe, active: settings.show_projects !== false, action: () => setActiveTab("projects") },
-          { id: "videos", label: "Videos", icon: Video, active: settings.show_videos !== false, action: () => setActiveTab("videos") },
+          { id: "assignments", label: settings.assignments_tab_label ? (settings.assignments_tab_label.split(" ").length > 1 && settings.assignments_tab_label.length > 8 ? settings.assignments_tab_label.split(" ")[0] : settings.assignments_tab_label) : "Sheets", icon: BookOpen, active: settings.show_assignments !== false, action: () => setActiveTab("assignments") },
+          { id: "projects", label: settings.projects_tab_label ? (settings.projects_tab_label.split(" ").length > 1 && settings.projects_tab_label.length > 8 ? settings.projects_tab_label.split(" ")[0] : settings.projects_tab_label) : "Projects", icon: Globe, active: settings.show_projects !== false, action: () => setActiveTab("projects") },
+          { id: "videos", label: settings.videos_tab_label ? (settings.videos_tab_label.split(" ").length > 1 && settings.videos_tab_label.length > 8 ? settings.videos_tab_label.split(" ")[0] : settings.videos_tab_label) : "Videos", icon: Video, active: settings.show_videos !== false, action: () => setActiveTab("videos") },
           { id: "support", label: "Inquire", icon: MessageSquare, action: () => { window.open(`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMsg)}`, "_blank"); } },
         ].map((item) => {
           if (item.active === false) return null;
