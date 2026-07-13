@@ -38,6 +38,10 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
 
   // Set the dynamic theme variables on load and when settings change
   useEffect(() => {
+    console.log("=== SHOWCASE HUB THEME APPLIED ===");
+    console.log("themeColor:", themeColor);
+    console.log("whatsappPhone:", whatsappPhone);
+
     const root = document.documentElement;
     const colors: Record<string, { primary: string; hover: string; light: string; rgb: string }> = {
       indigo: { primary: "#4f46e5", hover: "#4338ca", light: "#f5f3ff", rgb: "79, 70, 229" },
@@ -51,7 +55,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
     root.style.setProperty("--dynamic-brand-hover", theme.hover);
     root.style.setProperty("--dynamic-brand-light", theme.light);
     root.style.setProperty("--dynamic-brand-rgb", theme.rgb);
-  }, [themeColor]);
+  }, [themeColor, whatsappPhone]);
 
   // Group demos by type
   const assignments = useMemo(() => initialDemos.filter(d => d.type === "assignment"), [initialDemos]);

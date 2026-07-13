@@ -44,6 +44,10 @@ export default async function LandingPage() {
   const homepageConfig = settingsObj.homepage_config || {};
   const whatsappConfig = settingsObj.whatsapp_config || {};
 
+  console.log("=== SERVER LOADED SETTINGS ===");
+  console.log("homepageConfig:", homepageConfig);
+  console.log("whatsappConfig:", whatsappConfig);
+
   const settings = {
     hero_title: homepageConfig.hero_title || "Guru Nanak Photostat Fatehabad",
     hero_subtitle: homepageConfig.hero_subtitle || "Verify Assignment Sheet Quality Before You Order.",
