@@ -15,11 +15,13 @@ const NAV_ITEMS = [
   { label: "Reviews", href: "/reviews" },
 ];
 
+const supabase = createClient();
+
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const supabase = createClient();
+  const [phone, setPhone] = useState("919352483446");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -30,10 +32,25 @@ export function Navbar() {
       setIsAdmin(!!session);
     });
 
+    supabase
+      .from("site_settings")
+      .select("*")
+      .eq("key", "whatsapp_config")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data && data.value && data.value.phone) {
+          let num = data.value.phone;
+          if (num.length === 10 && !num.startsWith("91")) {
+            num = "91" + num;
+          }
+          setPhone(num);
+        }
+      });
+
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, []);
 
   const isAdminRoute = pathname?.startsWith("/omgnk");
 
@@ -86,7 +103,7 @@ export function Navbar() {
           {/* Desktop Action */}
           <div className="hidden md:flex items-center gap-4">
             <a
-              href="https://wa.me/919352483446"
+              href={`https://wa.me/${phone}`}
               target="_blank"
               rel="noreferrer"
               className="text-xs px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 shadow-md font-semibold transition-all"

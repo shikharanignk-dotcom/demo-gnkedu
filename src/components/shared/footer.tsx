@@ -1,9 +1,34 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckSquare, Mail, Phone, Clock } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 export function Footer() {
+  const [phone, setPhone] = useState("919352483446");
+
+  useEffect(() => {
+    supabase
+      .from("site_settings")
+      .select("*")
+      .eq("key", "whatsapp_config")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data && data.value && data.value.phone) {
+          setPhone(data.value.phone);
+        }
+      });
+  }, []);
+
+  const displayPhone = phone.startsWith("91") && phone.length === 12 
+    ? `+91 ${phone.slice(2, 7)} ${phone.slice(7)}` 
+    : phone;
+
   return (
-    <footer className="w-full border-t border-slate-200 bg-slate-50 py-10 mt-auto">
+    <footer className="w-full border-t border-slate-200 bg-slate-50 py-10 mt-auto pb-24 md:pb-10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Info */}
@@ -20,7 +45,7 @@ export function Footer() {
           {/* Quick Links */}
           <div>
             <h4 className="text-xs font-bold text-slate-900 tracking-wider uppercase mb-3">Navigation</h4>
-            <ul className="space-y-1.5">
+            <ul className="space-y-2">
               <li>
                 <Link href="/assignments" className="text-xs text-slate-500 hover:text-indigo-600 transition-colors">
                   Assignments
@@ -50,7 +75,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li className="flex items-center gap-2 text-xs text-slate-500">
                 <Phone className="h-3.5 w-3.5 text-indigo-600" />
-                <span>+91 93524 83446</span>
+                <span>{displayPhone}</span>
               </li>
               <li className="flex items-center gap-2 text-xs text-slate-500">
                 <Mail className="h-3.5 w-3.5 text-indigo-600" />
