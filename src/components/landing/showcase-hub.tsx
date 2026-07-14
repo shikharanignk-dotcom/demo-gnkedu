@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Search, BookOpen, Globe, Video, Bell, Star, MessageSquare, Download, ZoomIn, ZoomOut, RotateCcw, X, Home, ExternalLink, ShieldCheck, ChevronRight } from "lucide-react";
+import { Search, BookOpen, Globe, Video, Bell, Star, MessageSquare, Download, ZoomIn, ZoomOut, RotateCcw, X, Home, ExternalLink, ShieldCheck, ChevronRight, ChevronLeft, FileText, PlayCircle } from "lucide-react";
 
 interface ShowcaseHubProps {
   initialDemos: any[];
@@ -71,6 +71,9 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
     root.style.setProperty("--dynamic-brand-rgb", theme.rgb);
   }, [themeColor, whatsappPhone]);
 
+
+
+
   // Group demos by type
   const assignments = useMemo(() => initialDemos.filter(d => d.type === "assignment"), [initialDemos]);
   const projects = useMemo(() => initialDemos.filter(d => d.type === "project"), [initialDemos]);
@@ -84,12 +87,12 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
   // Extract unique categories based on active tab
   const categories = useMemo(() => {
     const set = new Set<string>();
-    const list = activeTab === "assignments" ? assignments : activeTab === "projects" ? projects : [];
+    const list = activeTab === "assignments" ? assignments : activeTab === "projects" ? projects : videos;
     list.forEach((item) => {
       if (item.category) set.add(item.category);
     });
     return Array.from(set);
-  }, [activeTab, assignments, projects]);
+  }, [activeTab, assignments, projects, videos]);
 
   // Extract unique tech tags for projects
   const allTechTags = useMemo(() => {
@@ -126,9 +129,57 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
 
   const filteredVideos = useMemo(() => {
     return videos.filter((item) => {
-      return item.title.toLowerCase().includes(search.toLowerCase());
+      const matchSearch = item.title.toLowerCase().includes(search.toLowerCase());
+      const matchCategory = selectedCategory === "all" || item.category === selectedCategory;
+      return matchSearch && matchCategory;
     });
-  }, [videos, search]);
+  }, [videos, search, selectedCategory]);
+
+  // Navigate next/prev items inside viewer modals
+  const handleNavigateViewer = (direction: "next" | "prev") => {
+    if (viewerItem) {
+      const currentList = viewerItem.type === "assignment" 
+        ? filteredAssignments 
+        : (viewerItem.type === "video" ? filteredVideos : []);
+      if (currentList.length <= 1) return;
+      const currentIndex = currentList.findIndex((item) => item.id === viewerItem.id);
+      if (currentIndex === -1) return;
+
+      let nextIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
+      if (nextIndex >= currentList.length) nextIndex = 0;
+      if (nextIndex < 0) nextIndex = currentList.length - 1;
+
+      setViewerItem(currentList[nextIndex]);
+      setZoom(100);
+    } else if (activeProject) {
+      if (filteredProjects.length <= 1) return;
+      const currentIndex = filteredProjects.findIndex((item) => item.id === activeProject.id);
+      if (currentIndex === -1) return;
+
+      let nextIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
+      if (nextIndex >= filteredProjects.length) nextIndex = 0;
+      if (nextIndex < 0) nextIndex = filteredProjects.length - 1;
+
+      setActiveProject(filteredProjects[nextIndex]);
+      setGalleryIdx(0);
+    }
+  };
+
+  // Keyboard Navigation Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") {
+        handleNavigateViewer("next");
+      } else if (e.key === "ArrowLeft") {
+        handleNavigateViewer("prev");
+      } else if (e.key === "Escape") {
+        setViewerItem(null);
+        setActiveProject(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [viewerItem, activeProject, filteredAssignments, filteredProjects, filteredVideos]);
 
   return (
     <div className="w-full space-y-5 pb-16 md:pb-6">
@@ -229,6 +280,40 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
           })}
         </div>
       </div>
+
+      {/* 🏷️ Horizontal Category Pills (Quick-Chips) */}
+      {categories.length > 0 && (
+        <div className="mx-auto max-w-xl px-4 select-none">
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory">
+            <button
+              onClick={() => setSelectedCategory("all")}
+              className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider transition-all duration-200 shrink-0 border cursor-pointer ${
+                selectedCategory === "all"
+                  ? "bg-brand-primary border-brand-primary text-white shadow-premium scale-[1.03]"
+                  : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-350"
+              }`}
+            >
+              All Categories
+            </button>
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider transition-all duration-200 shrink-0 border cursor-pointer ${
+                    isActive
+                      ? "bg-brand-primary border-brand-primary text-white shadow-premium scale-[1.03]"
+                      : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-350"
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 🔍 Search & Filter Panels */}
       <div className="mx-auto max-w-xl px-4">
@@ -421,8 +506,11 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
         {activeTab === "videos" && (
           <div className="grid grid-cols-1 gap-3.5">
             {filteredVideos.map((vid) => {
+              const isDirectFile = vid.file_urls && vid.file_urls.length > 0;
+              const isPdf = isDirectFile && (vid.file_urls[0].toLowerCase().endsWith(".pdf") || vid.file_urls[0].includes("sample.pdf"));
+              
               let embedUrl = vid.youtube_url;
-              if (embedUrl && !embedUrl.includes("/embed/")) {
+              if (!isDirectFile && embedUrl && !embedUrl.includes("/embed/")) {
                 try {
                   const url = new URL(embedUrl);
                   let vidId = "";
@@ -439,14 +527,47 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
 
               return (
                 <div key={vid.id} className="rounded-xl bg-white border border-slate-100 shadow-premium overflow-hidden space-y-2.5 pb-3">
-                  <div className="relative aspect-video bg-black">
-                    <iframe
-                      className="w-full h-full border-0"
-                      src={embedUrl}
-                      title={vid.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
+                  <div className="relative aspect-video bg-black overflow-hidden group">
+                    {isDirectFile ? (
+                      isPdf ? (
+                        <div className="w-full h-full relative bg-slate-900 flex flex-col items-center justify-center p-4">
+                          {vid.thumbnail_url ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={vid.thumbnail_url}
+                              alt={vid.title}
+                              className="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : null}
+                          <div className="absolute inset-0 bg-slate-950/40" />
+                          <button
+                            onClick={() => {
+                              setViewerItem(vid);
+                              setZoom(100);
+                            }}
+                            className="relative z-10 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-brand-primary text-xs font-bold uppercase shadow-premium flex items-center gap-2 transition-all cursor-pointer scale-95 hover:scale-100"
+                          >
+                            <FileText className="h-4.5 w-4.5 text-brand-primary shrink-0" />
+                            <span>View PDF Guide</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <video
+                          src={vid.file_urls[0]}
+                          controls
+                          poster={vid.thumbnail_url}
+                          className="w-full h-full object-cover"
+                        />
+                      )
+                    ) : (
+                      <iframe
+                        className="w-full h-full border-0"
+                        src={embedUrl}
+                        title={vid.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                    )}
                   </div>
                   <div className="px-3 space-y-0.5">
                     {vid.category && (
@@ -455,6 +576,9 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
                       </span>
                     )}
                     <h3 className="text-[10px] font-bold text-slate-900 pt-1 leading-snug">{vid.title}</h3>
+                    {vid.description && (
+                      <p className="text-[8px] text-slate-500 line-clamp-2 leading-relaxed pt-0.5">{vid.description}</p>
+                    )}
                   </div>
                 </div>
               );
@@ -533,10 +657,27 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
       {viewerItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-sm">
           <div className="relative w-full max-w-2xl h-[80vh] rounded-xl bg-white border border-slate-200 shadow-xl overflow-hidden flex flex-col justify-between">
+            {/* Prev Navigation Button (Desktop/Tablet) */}
+            <button
+              onClick={() => handleNavigateViewer("prev")}
+              className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/95 hover:bg-white text-slate-700 shadow-premium transition-all hover:scale-105 border border-slate-100 items-center justify-center cursor-pointer min-h-[36px]"
+              title="Previous"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {/* Next Navigation Button (Desktop/Tablet) */}
+            <button
+              onClick={() => handleNavigateViewer("next")}
+              className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/95 hover:bg-white text-slate-700 shadow-premium transition-all hover:scale-105 border border-slate-100 items-center justify-center cursor-pointer min-h-[36px]"
+              title="Next"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+
             <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-slate-50">
               <div className="space-y-0.5">
                 <h2 className="text-xs sm:text-sm font-heading font-bold text-slate-900 truncate max-w-[200px] sm:max-w-md">{viewerItem.title}</h2>
-                <p className="text-[8px] text-slate-500">Format: {viewerItem.assignment_type}</p>
+                <p className="text-[8px] text-slate-500">Format: {viewerItem.assignment_type || "Direct PDF"}</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="hidden sm:flex items-center gap-1 border border-slate-200 rounded-lg bg-white px-1.5 py-0.5">
@@ -553,7 +694,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
 
             <div className="flex-1 bg-slate-100 overflow-auto flex items-center justify-center p-3.5">
               {viewerItem.file_urls?.[0] ? (
-                viewerItem.file_urls[0].endsWith(".pdf") || viewerItem.file_urls[0].includes("sample.pdf") ? (
+                viewerItem.file_urls[0].toLowerCase().endsWith(".pdf") || viewerItem.file_urls[0].includes("sample.pdf") ? (
                   <iframe
                     src={`${viewerItem.file_urls[0]}#toolbar=0`}
                     style={{ transform: `scale(${zoom / 100})`, transformOrigin: "center center" }}
@@ -574,12 +715,28 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
             </div>
 
             <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 flex gap-3 items-center justify-between">
+              <div className="flex gap-1.5 sm:hidden">
+                <button
+                  onClick={() => handleNavigateViewer("prev")}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-200/80 active:bg-slate-350 text-slate-700 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <span>Prev</span>
+                </button>
+                <button
+                  onClick={() => handleNavigateViewer("next")}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-200/80 active:bg-slate-350 text-slate-700 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
               <p className="hidden sm:block text-[9px] text-slate-500">Directly contact on WhatsApp to order your customized sheets.</p>
               <a
-                href={`https://wa.me/${whatsappPhone}?text=Hi, I am interested in ordering assignment: ${encodeURIComponent(viewerItem.title)}`}
+                href={`https://wa.me/${whatsappPhone}?text=Hi, I am interested in ordering: ${encodeURIComponent(viewerItem.title)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-5 py-2 rounded-lg bg-brand-primary text-white font-bold text-[9px] uppercase text-center hover:bg-brand-primary-hover"
+                className="flex-1 sm:flex-initial px-5 py-2 rounded-lg bg-brand-primary text-white font-bold text-[9px] uppercase text-center hover:bg-brand-primary-hover"
               >
                 Inquire on WhatsApp
               </a>
@@ -592,6 +749,23 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
       {activeProject && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-sm">
           <div className="relative w-full max-w-2xl h-[80vh] rounded-xl bg-white border border-slate-200 shadow-xl overflow-hidden flex flex-col justify-between">
+            {/* Prev Navigation Button (Desktop/Tablet) */}
+            <button
+              onClick={() => handleNavigateViewer("prev")}
+              className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/95 hover:bg-white text-slate-700 shadow-premium transition-all hover:scale-105 border border-slate-100 items-center justify-center cursor-pointer min-h-[36px]"
+              title="Previous"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {/* Next Navigation Button (Desktop/Tablet) */}
+            <button
+              onClick={() => handleNavigateViewer("next")}
+              className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/95 hover:bg-white text-slate-700 shadow-premium transition-all hover:scale-105 border border-slate-100 items-center justify-center cursor-pointer min-h-[36px]"
+              title="Next"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+
             <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-slate-50">
               <div className="space-y-0.5">
                 <span className="text-[7px] px-1.5 py-0.5 rounded bg-sky-50 text-sky-600 border border-sky-100 font-bold">{activeProject.category}</span>
@@ -659,18 +833,36 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
               )}
             </div>
 
-            <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 flex gap-2 justify-end">
-              {activeProject.live_url && (
-                <a href={activeProject.live_url} target="_blank" rel="noreferrer" className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-[9px] font-bold border border-slate-200 flex items-center gap-1">Open app</a>
-              )}
-              <a
-                href={`https://wa.me/${whatsappPhone}?text=Hi, I want to order project: ${encodeURIComponent(activeProject.title)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="px-4.5 py-1.5 rounded-lg bg-brand-primary text-white text-[9px] font-bold uppercase hover:bg-brand-primary-hover"
-              >
-                Order Project
-              </a>
+            <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 flex gap-2 items-center justify-between">
+              <div className="flex gap-1.5 sm:hidden">
+                <button
+                  onClick={() => handleNavigateViewer("prev")}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-200/80 active:bg-slate-350 text-slate-700 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <span>Prev</span>
+                </button>
+                <button
+                  onClick={() => handleNavigateViewer("next")}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-200/80 active:bg-slate-350 text-slate-700 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="flex gap-2">
+                {activeProject.live_url && (
+                  <a href={activeProject.live_url} target="_blank" rel="noreferrer" className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-[9px] font-bold border border-slate-200 flex items-center gap-1">Open app</a>
+                )}
+                <a
+                  href={`https://wa.me/${whatsappPhone}?text=Hi, I want to order project: ${encodeURIComponent(activeProject.title)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4.5 py-1.5 rounded-lg bg-brand-primary text-white text-[9px] font-bold uppercase hover:bg-brand-primary-hover"
+                >
+                  Order Project
+                </a>
+              </div>
             </div>
           </div>
         </div>

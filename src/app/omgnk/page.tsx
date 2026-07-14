@@ -57,6 +57,7 @@ export default function AdminDashboardPage() {
       }
     }
   }, [isModalOpen, homepageConfig.paper_formats]);
+  const [formVideoSource, setFormVideoSource] = useState<"youtube" | "file">("youtube");
   const [formDesc, setFormDesc] = useState("");
   const [formLiveUrl, setFormLiveUrl] = useState("");
   const [formYoutubeUrl, setFormYoutubeUrl] = useState("");
@@ -200,7 +201,7 @@ export default function AdminDashboardPage() {
         assignment_type: formType === "assignment" ? formFormat : null,
         tech_stack: formType === "project" ? techArray : null,
         live_url: formType === "project" ? formLiveUrl : null,
-        youtube_url: formType === "project" ? formYoutubeUrl : null,
+        youtube_url: formType === "project" ? formYoutubeUrl : (formType === "video" && formVideoSource === "youtube" ? formYoutubeUrl : null),
         category: formCategory,
         thumbnail_url: uploadedThumbnailUrl || "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=400",
         file_urls: uploadedFileUrl ? [uploadedFileUrl] : [],
@@ -219,6 +220,7 @@ export default function AdminDashboardPage() {
       setFormYoutubeUrl("");
       setUploadedFileUrl("");
       setUploadedThumbnailUrl("");
+      setFormVideoSource("youtube");
       setIsModalOpen(false);
       fetchAdminData();
     } catch (err: any) {
@@ -372,6 +374,7 @@ export default function AdminDashboardPage() {
         {[
           { id: "assignments", label: "Assignments", icon: FileText },
           { id: "projects", label: "Projects", icon: Globe },
+          { id: "videos", label: "Video Demos", icon: PlayCircle },
           { id: "info", label: "Important Info", icon: Bell },
           { id: "reviews", label: "Reviews", icon: Star },
           { id: "settings", label: "Site Settings", icon: Settings },
@@ -501,6 +504,70 @@ export default function AdminDashboardPage() {
                         </td>
                       </tr>
                     ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Videos list */}
+        {activeTab === "videos" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-sm font-heading font-bold text-slate-900">Showcase Videos / PDFs</h2>
+              <button
+                onClick={() => {
+                  setFormType("video");
+                  setFormVideoSource("youtube");
+                  setIsModalOpen(true);
+                }}
+                className="flex items-center gap-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase transition-all cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Video Demo</span>
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto shadow-premium">
+              <table className="w-full text-left border-collapse text-xs min-w-[500px]">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold uppercase tracking-wider">
+                    <th className="p-3">Video Title</th>
+                    <th className="p-3">Category</th>
+                    <th className="p-3">Source Type</th>
+                    <th className="p-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {demos
+                    .filter((d) => d.type === "video")
+                    .map((item) => {
+                      const isDirectFile = item.file_urls && item.file_urls.length > 0;
+                      const sourceLabel = isDirectFile 
+                        ? (item.file_urls[0].endsWith(".pdf") ? "Uploaded PDF" : "Uploaded Video") 
+                        : "YouTube Link";
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-50 text-slate-600">
+                          <td className="p-3 font-semibold text-slate-900">{item.title}</td>
+                          <td className="p-3">{item.category}</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                              isDirectFile ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+                            }`}>
+                              {sourceLabel}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <button
+                              onClick={() => handleDeleteDemo(item.id)}
+                              className="p-1.5 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 transition-colors"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
@@ -855,19 +922,21 @@ export default function AdminDashboardPage() {
 
             {/* Form scroll container */}
             <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
-              {activeTab === "assignments" || activeTab === "projects" ? (
+              {activeTab === "assignments" || activeTab === "projects" || activeTab === "videos" ? (
                 <form id="demo-form" onSubmit={handleAddDemo} className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Item Type</label>
-                    <select
-                      value={formType}
-                      onChange={(e) => setFormType(e.target.value as any)}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                    >
-                      <option value="assignment">{homepageConfig.assignment_item_type_label || "Assignment File"}</option>
-                      <option value="project">{homepageConfig.project_item_type_label || "College Coding Project"}</option>
-                    </select>
-                  </div>
+                  {activeTab !== "videos" && (
+                    <div className="space-y-1">
+                      <label className="text-[9px] text-slate-700 font-bold uppercase">Item Type</label>
+                      <select
+                        value={formType}
+                        onChange={(e) => setFormType(e.target.value as any)}
+                        className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                      >
+                        <option value="assignment">{homepageConfig.assignment_item_type_label || "Assignment File"}</option>
+                        <option value="project">{homepageConfig.project_item_type_label || "College Coding Project"}</option>
+                      </select>
+                    </div>
+                  )}
 
                   <div className="space-y-1">
                     <label className="text-[9px] text-slate-700 font-bold uppercase">Title</label>
@@ -979,6 +1048,55 @@ export default function AdminDashboardPage() {
                     </div>
                   )}
 
+                  {formType === "video" && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1 col-span-2">
+                        <label className="text-[9px] text-slate-700 font-bold uppercase">Video Source Type</label>
+                        <select
+                          value={formVideoSource}
+                          onChange={(e) => setFormVideoSource(e.target.value as any)}
+                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                        >
+                          <option value="youtube">YouTube Embed Link</option>
+                          <option value="file">Direct Video / PDF Upload</option>
+                        </select>
+                      </div>
+
+                      {formVideoSource === "youtube" ? (
+                        <div className="space-y-1 col-span-2">
+                          <label className="text-[9px] text-slate-500">YouTube Embed Link</label>
+                          <input
+                            type="text"
+                            placeholder="https://youtube.com/embed/... or https://youtu.be/..."
+                            value={formYoutubeUrl}
+                            onChange={(e) => setFormYoutubeUrl(e.target.value)}
+                            className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-1 col-span-2 p-3 rounded-xl border border-dashed border-indigo-200 bg-indigo-50/50 text-center">
+                          <label className="text-[10px] text-indigo-700 font-bold block cursor-pointer">
+                            <Upload className="h-5 w-5 text-indigo-600 mx-auto mb-1" />
+                            <span>Select & Upload Video / PDF File</span>
+                            <span className="block text-[8px] text-indigo-500 font-medium mt-0.5">(.mp4, .webm, .mov, .pdf)</span>
+                            <input
+                              type="file"
+                              accept="video/*,.pdf"
+                              onChange={(e) => handleFileUpload(e, "file")}
+                              className="hidden"
+                            />
+                          </label>
+                          {uploading && <div className="text-[9px] text-indigo-600 font-bold mt-1 flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin animate-infinite" /> Uploading...</div>}
+                          {uploadedFileUrl && (
+                            <div className="mt-1.5 p-1 px-2 bg-emerald-50 rounded border border-emerald-200 text-[8px] text-emerald-600 font-semibold truncate">
+                              Uploaded: {uploadedFileUrl.split("/").pop()}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="space-y-1">
                     <label className="text-[9px] text-slate-700 font-bold uppercase">Description</label>
                     <textarea
@@ -1005,19 +1123,21 @@ export default function AdminDashboardPage() {
                       {uploadedThumbnailUrl && <p className="text-[8px] text-green-600 truncate">{uploadedThumbnailUrl}</p>}
                     </div>
 
-                    <div className="p-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center">
-                      <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
-                        <Upload className="h-4 w-4 text-indigo-600 mx-auto mb-0.5" />
-                        <span>Sample PDF</span>
-                        <input
-                          type="file"
-                          accept=".pdf,image/*"
-                          onChange={(e) => handleFileUpload(e, "file")}
-                          className="hidden"
-                        />
-                      </label>
-                      {uploadedFileUrl && <p className="text-[8px] text-green-600 truncate">{uploadedFileUrl}</p>}
-                    </div>
+                    {formType !== "video" && (
+                      <div className="p-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center">
+                        <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
+                          <Upload className="h-4 w-4 text-indigo-600 mx-auto mb-0.5" />
+                          <span>Sample PDF</span>
+                          <input
+                            type="file"
+                            accept=".pdf,image/*"
+                            onChange={(e) => handleFileUpload(e, "file")}
+                            className="hidden"
+                          />
+                        </label>
+                        {uploadedFileUrl && <p className="text-[8px] text-green-600 truncate">{uploadedFileUrl}</p>}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 pt-1">
