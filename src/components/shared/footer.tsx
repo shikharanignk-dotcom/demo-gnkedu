@@ -31,7 +31,7 @@ export function Footer() {
   return (
     <footer className="w-full border-t border-slate-200 bg-slate-50 py-10 mt-auto pb-24 md:pb-10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand Info */}
           <div className="md:col-span-2 space-y-3">
             <Link href="/" className="flex items-center gap-2 font-heading text-base font-extrabold text-slate-900">
@@ -41,33 +41,6 @@ export function Footer() {
             <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
               Premium showcase of our handwriting assignments, academic projects, coding demos, and course reviews. Verified trust and quality service for students.
             </p>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-xs font-bold text-slate-900 tracking-wider uppercase mb-3">Navigation</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/assignments" className="text-xs text-slate-500 hover:text-indigo-600 transition-colors">
-                  Assignments
-                </Link>
-              </li>
-              <li>
-                <Link href="/projects" className="text-xs text-slate-500 hover:text-indigo-600 transition-colors">
-                  Projects
-                </Link>
-              </li>
-              <li>
-                <Link href="/videos" className="text-xs text-slate-500 hover:text-indigo-600 transition-colors">
-                  Video Demos
-                </Link>
-              </li>
-              <li>
-                <Link href="/info" className="text-xs text-slate-500 hover:text-indigo-600 transition-colors">
-                  Important Info
-                </Link>
-              </li>
-            </ul>
           </div>
 
           {/* Contact Details */}
