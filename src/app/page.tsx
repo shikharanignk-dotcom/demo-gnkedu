@@ -94,27 +94,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 🛡️ Services features row */}
-      <section className="mx-auto max-w-xl px-4 mt-6 grid grid-cols-1 gap-3">
-        {[
-          { title: "Solved Papers", desc: "2023-24 Updates", icon: FileText, bg: "bg-blue-50 text-blue-600" },
-          { title: "Pan India Delivery", desc: "Within 3-5 working days", icon: Zap, bg: "bg-amber-50 text-amber-600" },
-          { title: "Expert Support", desc: "Live Academic Guidance", icon: HeartHandshake, bg: "bg-indigo-50 text-indigo-600" }
-        ].map((feat, i) => {
-          const Icon = feat.icon;
-          return (
-            <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
-              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${feat.bg}`}>
-                <Icon className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-slate-900">{feat.title}</h4>
-                <p className="text-[10px] text-slate-400 mt-0.5">{feat.desc}</p>
-              </div>
-            </div>
-          );
-        })}
-      </section>
+
 
       {/* 📊 dynamic trust statistics section */}
       {settingsObj.counters && (
@@ -189,8 +169,27 @@ export default function HomePage() {
         </div>
       </section>
 
-
-
+      {/* 🛡️ Services features row (Moved to bottom) */}
+      <section className="mx-auto max-w-xl px-4 mt-10 grid grid-cols-1 gap-3">
+        {[
+          { title: "Solved Papers", desc: "2023-24 Updates", icon: FileText, bg: "bg-blue-50 text-blue-600" },
+          { title: "Pan India Delivery", desc: "Within 3-5 working days", icon: Zap, bg: "bg-amber-50 text-amber-600" },
+          { title: "Expert Support", desc: "Live Academic Guidance", icon: HeartHandshake, bg: "bg-indigo-50 text-indigo-600" }
+        ].map((feat, i) => {
+          const Icon = feat.icon;
+          return (
+            <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${feat.bg}`}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">{feat.title}</h4>
+                <p className="text-[10px] text-slate-400 mt-0.5">{feat.desc}</p>
+              </div>
+            </div>
+          );
+        })}
+      </section>
       {/* 💬 Student Reviews testimonial section */}
       {reviews.length > 0 && (
         <section className="mx-auto max-w-xl px-4 mt-10 space-y-4">
