@@ -380,7 +380,7 @@ export function VideoReel({ videoUrl, title, demoId, likesCount = 0, isActive = 
           <div className="flex flex-col gap-4 items-center pl-2">
             {/* Like Button */}
             <button 
-              onClick={handleLike}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleLike(e); }}
               className="flex flex-col items-center gap-1 group/btn cursor-pointer"
             >
               <div className={`p-2.5 rounded-full backdrop-blur-md transition-all ${
@@ -390,95 +390,8 @@ export function VideoReel({ videoUrl, title, demoId, likesCount = 0, isActive = 
               </div>
               <span className="text-[9px] font-bold text-white/90 drop-shadow-md">{displayLikes}</span>
             </button>
-
-            {/* Comment Button */}
-            <button 
-              onClick={(e) => { e.stopPropagation(); setShowComments(!showComments); setShowMenu(false); }}
-              className="flex flex-col items-center gap-1 cursor-pointer"
-            >
-              <div className={`p-2.5 rounded-full backdrop-blur-md transition-all ${
-                showComments ? "bg-blue-500 text-white" : "bg-black/45 text-white border border-white/15 hover:bg-black/65"
-              }`}>
-                <MessageCircle className="h-4.5 w-4.5" />
-              </div>
-              <span className="text-[9px] font-bold text-white/90 drop-shadow-md">{publishedComments.length}</span>
-            </button>
           </div>
         </div>
-
-        {/* Comments Panel (slides up from bottom) */}
-        {showComments && (
-          <div
-            className="absolute bottom-0 left-0 right-0 z-30 bg-[#0f0f23]/95 backdrop-blur-xl rounded-t-2xl border-t border-white/10 max-h-[65%] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Comments Header */}
-            <div className="flex justify-between items-center px-4 py-3 border-b border-white/5 shrink-0">
-              <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">
-                Comments ({publishedComments.length})
-              </h4>
-              <button
-                onClick={() => setShowComments(false)}
-                className="p-1 rounded-full hover:bg-white/10 transition-colors text-white/60 cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Comments List */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-              {publishedComments.length === 0 ? (
-                <div className="text-center py-6">
-                  <MessageCircle className="h-6 w-6 text-white/15 mx-auto mb-2" />
-                  <p className="text-[10px] text-white/30 font-bold">No comments yet. Be the first!</p>
-                </div>
-              ) : (
-                publishedComments.map((c: any) => (
-                  <div key={c._id} className="flex gap-2.5 group/comment">
-                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-[9px] font-extrabold uppercase shrink-0">
-                      {(c.name || "A")[0]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-extrabold text-white/80">{c.name}</span>
-                        <span className="text-[8px] text-white/25">
-                          {new Date(c._creationTime).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-white/60 leading-relaxed mt-0.5 break-words">{c.text}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Comment Input */}
-            <form onSubmit={handleSubmitComment} className="shrink-0 px-4 py-3 border-t border-white/5 flex gap-2">
-              <input
-                ref={commentInputRef}
-                type="text"
-                placeholder="Your name"
-                value={commentName}
-                onChange={(e) => setCommentName(e.target.value)}
-                className="w-20 px-2.5 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-[10px] placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 shrink-0"
-              />
-              <input
-                type="text"
-                placeholder="Add a comment..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                className="flex-1 min-w-0 px-2.5 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-[10px] placeholder:text-white/20 focus:outline-none focus:border-amber-500/50"
-              />
-              <button
-                type="submit"
-                disabled={!commentText.trim()}
-                className="p-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer shrink-0"
-              >
-                <Send className="h-3.5 w-3.5" />
-              </button>
-            </form>
-          </div>
-        )}
 
         {/* Close menu on outside click */}
         {showMenu && (
