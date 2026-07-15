@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, CheckSquare, ShieldCheck } from "lucide-react";
+import { Menu, X, CheckSquare, ShieldCheck, Home, Star, Info, MessageCircle } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -77,90 +77,92 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/90 backdrop-blur-lg shadow-sm">
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-1.5 font-heading text-base font-extrabold tracking-tight text-slate-900">
-            <CheckSquare className="h-5 w-5 text-[#a15c00]" />
-            <span>{logoText}</span>
-          </Link>
+    <>
+      <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/90 backdrop-blur-lg shadow-sm">
+        <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-1.5 font-heading text-base font-extrabold tracking-tight text-slate-900">
+              <CheckSquare className="h-5 w-5 text-[#a15c00]" />
+              <span>{logoText}</span>
+            </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6">
-            {NAV_ITEMS.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`text-[10px] font-bold uppercase tracking-wider transition-colors hover:text-[#a15c00] ${
-                    isActive ? "text-[#a15c00]" : "text-slate-500"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
+            {/* Desktop Nav */}
+            <div className="hidden md:flex items-center gap-6">
+              {NAV_ITEMS.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`text-[10px] font-bold uppercase tracking-wider transition-colors hover:text-[#a15c00] ${
+                      isActive ? "text-[#a15c00]" : "text-slate-500"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
 
-          {/* Desktop Action */}
-          <div className="hidden md:flex items-center gap-4">
-            <a
-              href={`https://wa.me/${phone}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-[10px] px-4 py-2 rounded-full bg-[#a15c00] text-white hover:bg-[#854b00] shadow-sm font-bold uppercase tracking-wider transition-all"
-            >
-              Order Now
-            </a>
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-slate-505 hover:text-slate-900 p-1 cursor-pointer"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {isOpen && (
-          <div className="md:hidden border-t border-slate-100 py-3 space-y-1 bg-white">
-            {NAV_ITEMS.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
-                    isActive
-                      ? "bg-amber-500/5 text-[#a15c00]"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-            <div className="pt-3 px-3">
+            {/* Desktop Action */}
+            <div className="hidden md:flex items-center gap-4">
               <a
                 href={`https://wa.me/${phone}`}
                 target="_blank"
                 rel="noreferrer"
-                className="block w-full py-2.5 rounded-xl bg-[#a15c00] hover:bg-[#854b00] text-white text-center font-bold text-xs uppercase tracking-wider shadow-sm transition-all"
+                className="text-[10px] px-4 py-2 rounded-full bg-[#a15c00] text-white hover:bg-[#854b00] shadow-sm font-bold uppercase tracking-wider transition-all"
               >
-                Order on WhatsApp
+                Order Now
               </a>
             </div>
+
           </div>
-        )}
-      </nav>
-    </header>
+        </nav>
+      </header>
+
+      {/* 📱 Premium Sticky Mobile Bottom Navigation Bar (Only Icon tab menu) */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/85 backdrop-blur-lg border-t border-slate-200/80 py-3.5 flex justify-around items-center md:hidden shadow-lg select-none px-6">
+        {/* Home */}
+        <Link 
+          href="/"
+          className={`p-2.5 transition-all flex flex-col items-center justify-center rounded-xl ${
+            pathname === "/" ? "text-[#a15c00] bg-amber-500/10 scale-105" : "text-slate-450 hover:bg-slate-50"
+          }`}
+        >
+          <Home className="h-5.5 w-5.5" />
+        </Link>
+
+        {/* Reviews */}
+        <Link 
+          href="/reviews"
+          className={`p-2.5 transition-all flex flex-col items-center justify-center rounded-xl ${
+            pathname === "/reviews" ? "text-[#a15c00] bg-amber-500/10 scale-105" : "text-slate-450 hover:bg-slate-50"
+          }`}
+        >
+          <Star className="h-5.5 w-5.5" />
+        </Link>
+
+        {/* Important Info */}
+        <Link 
+          href="/info"
+          className={`p-2.5 transition-all flex flex-col items-center justify-center rounded-xl ${
+            pathname === "/info" ? "text-[#a15c00] bg-amber-500/10 scale-105" : "text-slate-450 hover:bg-slate-50"
+          }`}
+        >
+          <Info className="h-5.5 w-5.5" />
+        </Link>
+
+        {/* WhatsApp Chat Icon */}
+        <a 
+          href={`https://wa.me/${phone}`}
+          target="_blank"
+          rel="noreferrer"
+          className="p-2.5 transition-all flex flex-col items-center justify-center text-emerald-500 hover:text-emerald-600 scale-105 bg-emerald-50 rounded-xl border border-emerald-100/50 shadow-sm"
+        >
+          <MessageCircle className="h-5.5 w-5.5 fill-current text-emerald-500" />
+        </a>
+      </div>
+    </>
   );
 }

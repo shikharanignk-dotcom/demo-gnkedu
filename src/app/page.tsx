@@ -189,38 +189,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 📜 Unmatched Printing Quality Section (Screenshot 1) */}
-      <section className="mx-auto max-w-xl px-4 mt-10">
-        <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-200/50 space-y-4">
-          <h3 className="text-xs font-heading font-extrabold text-slate-900 uppercase tracking-wider">
-            Unmatched Printing Quality
-          </h3>
-          
-          <ul className="space-y-3">
-            {[
-              "75 GSM Premium A4 Paper for durability",
-              "Laser-sharp text readability guaranteed",
-              "Waterproof ink for long-term document safety"
-            ].map((text, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-[10px] text-slate-650 font-medium">
-                <CheckCircle2 className="h-4 w-4 text-[#a15c00] shrink-0 mt-0.5" />
-                <span>{text}</span>
-              </li>
-            ))}
-          </ul>
 
-          <div className="pt-2">
-            <a
-              href={`https://wa.me/${phone}?text=Hi, I want to request a sample PDF of solved assignments.`}
-              target="_blank"
-              rel="noreferrer"
-              className="w-full text-center py-2.5 rounded-xl border border-[#a15c00] hover:bg-[#a15c00]/5 text-[#a15c00] font-extrabold text-[10px] uppercase tracking-wider bg-white transition-colors cursor-pointer block"
-            >
-              Request Sample PDF
-            </a>
-          </div>
-        </div>
-      </section>
 
       {/* 💬 Student Reviews testimonial section */}
       {reviews.length > 0 && (
