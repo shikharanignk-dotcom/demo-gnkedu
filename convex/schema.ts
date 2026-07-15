@@ -30,6 +30,23 @@ export default defineSchema({
     click_count_view_pdf: v.number(),
     click_count_order: v.number(),
     likes_count: v.optional(v.number()),
+    video_reels: v.optional(v.array(v.string())),
+    handwritten_docs: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          pages: v.array(v.string()),
+        })
+      )
+    ),
+    pdf_docs: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          pages: v.array(v.string()),
+        })
+      )
+    ),
   }).index("by_slug", ["slug"]),
 
   reviews: defineTable({

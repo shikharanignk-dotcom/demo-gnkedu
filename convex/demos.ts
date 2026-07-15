@@ -72,6 +72,23 @@ export const create = mutation({
     is_featured: v.boolean(),
     sort_order: v.number(),
     published: v.boolean(),
+    video_reels: v.optional(v.array(v.string())),
+    handwritten_docs: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          pages: v.array(v.string()),
+        })
+      )
+    ),
+    pdf_docs: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          pages: v.array(v.string()),
+        })
+      )
+    ),
   },
   handler: async (ctx: any, args: any) => {
     return await ctx.db.insert("demos", {
@@ -109,6 +126,23 @@ export const update = mutation({
     is_featured: v.optional(v.boolean()),
     sort_order: v.optional(v.number()),
     published: v.optional(v.boolean()),
+    video_reels: v.optional(v.array(v.string())),
+    handwritten_docs: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          pages: v.array(v.string()),
+        })
+      )
+    ),
+    pdf_docs: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          pages: v.array(v.string()),
+        })
+      )
+    ),
   },
   handler: async (ctx: any, args: any) => {
     const { id, ...fields } = args;

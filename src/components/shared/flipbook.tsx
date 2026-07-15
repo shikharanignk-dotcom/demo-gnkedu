@@ -160,63 +160,27 @@ export function Flipbook({ images, pdfName, whatsappLink, maxPreviews = 5 }: Fli
     <div className="w-full flex flex-col items-center select-none max-w-2xl mx-auto">
       {/* Header Bar */}
       <div className="w-full bg-[#1a1a2e] text-white px-4 py-2.5 rounded-t-2xl flex justify-between items-center text-[10px] font-bold tracking-wider border-b border-white/5">
-        <span className="truncate max-w-[55%] opacity-90">{pdfName}</span>
-        <div className="flex items-center gap-2">
-          <span className="text-white/50 font-mono">
-            {activeSpread?.pageNumText}
-          </span>
-        </div>
+        <span className="truncate max-w-[90%] opacity-90">{pdfName}</span>
       </div>
 
       {/* Main book frame wrapper */}
       <div className="relative w-full bg-slate-900 p-3 pb-4 shadow-2xl border-x border-[#1a1a2e]/30">
-        
-        {/* Paper stack depth effect */}
-        <div className="absolute bottom-2.5 right-6 left-6 h-1 bg-white border border-slate-200 shadow rounded z-0" />
-        <div className="absolute bottom-1 right-8 left-8 h-1 bg-white/80 border border-slate-200/50 shadow rounded z-0" />
 
         {/* Outer binding cover background overlay */}
         <div className="absolute inset-2 bg-gradient-to-r from-amber-900 via-orange-950 to-amber-900 rounded-lg shadow-inner opacity-40 pointer-events-none z-0" />
-
-        {/* 1. MOBILE STYLE: Left bound single page */}
-        {isMobile && (
-          <div className="absolute top-0 bottom-0 left-3 w-7 z-20 pointer-events-none flex flex-col justify-around py-5 bg-slate-900/5">
-            {Array.from({ length: 15 }).map((_, i) => (
-              <div key={i} className="flex items-center">
-                <div className="w-1.5 h-1.5 rounded-full bg-black/50 ml-1.5 shadow-inner" />
-                <div className="h-2 w-5 bg-gradient-to-b from-slate-400 via-slate-100 to-slate-500 rounded-r-full shadow border-y border-r border-slate-350/50 -ml-0.5" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* 2. DESKTOP STYLE: Center split spiral binding */}
-        {!isMobile && (
-          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-6 z-25 pointer-events-none flex flex-col justify-around py-4">
-            {Array.from({ length: 14 }).map((_, i) => (
-              <div key={i} className="flex justify-between items-center w-full">
-                <div className="w-1 h-1 rounded-full bg-black/70 shadow-inner" />
-                <div className="h-1.5 w-6 bg-gradient-to-r from-slate-400 via-white to-slate-500 rounded-full shadow border border-slate-400/50 transform -rotate-12" />
-                <div className="w-1 h-1 rounded-full bg-black/70 shadow-inner" />
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* Scroll snap horizontal container for pages */}
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className={`relative w-full overflow-x-auto flex snap-x snap-mandatory scroll-smooth scrollbar-none bg-slate-100/90 rounded-lg border border-slate-700 shadow-2xl z-10 ${
-            isMobile ? "pl-7" : ""
-          }`}
+          className="relative w-full overflow-x-auto flex snap-x snap-mandatory scroll-smooth scrollbar-none bg-slate-100/90 rounded-lg border border-slate-700 shadow-2xl z-10"
           style={{ minHeight: 330 }}
         >
           {spreads.map((spread, idx) => (
             <div
               key={idx}
               className={`w-full shrink-0 snap-center relative bg-white overflow-hidden ${
-                isMobile ? "flex flex-col items-center justify-center p-3 pl-4" : "grid grid-cols-2"
+                isMobile ? "flex flex-col items-center justify-center p-3" : "grid grid-cols-2"
               }`}
               style={{ minHeight: 330 }}
             >
@@ -229,13 +193,6 @@ export function Flipbook({ images, pdfName, whatsappLink, maxPreviews = 5 }: Fli
               {isMobile && (
                 <div className="absolute top-0 bottom-0 left-0 w-4 bg-gradient-to-r from-black/15 to-transparent pointer-events-none z-20" />
               )}
-
-              {/* Watermarks */}
-              <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-center gap-12 opacity-[0.03] select-none">
-                <div className="text-slate-900 text-xs font-extrabold uppercase tracking-[4px] rotate-[-25deg] whitespace-nowrap">
-                  GNK PHOTOSTAT &bull; PREVIEW
-                </div>
-              </div>
 
               {/* ---------------- MOBILE RENDERING OR DESKTOP LEFT PAGE ---------------- */}
               <div className={`relative flex items-center justify-center bg-white ${
@@ -373,22 +330,20 @@ export function Flipbook({ images, pdfName, whatsappLink, maxPreviews = 5 }: Fli
       </div>
 
       {/* Bottom Controls */}
-      <div className="w-full bg-[#1a1a2e] rounded-b-2xl py-3 px-4 flex items-center justify-center border-t border-white/5">
+      <div className="w-full bg-[#1a1a2e] rounded-b-2xl py-2 px-4 flex items-center justify-center border-t border-white/5">
         <div className="text-center">
-          <span className="text-[10px] text-white/40 font-bold tracking-wider">
-            {activeSpread?.isLock ? "Solved Copy Locked" : `${currentSpread + 1} / ${spreads.length}`}
-          </span>
           {/* Dot navigation */}
-          <div className="flex gap-2 mt-2 justify-center">
+          <div className="flex gap-2 mt-2 justify-center items-center">
             {spreads.map((_, i) => (
               <button
                 key={i}
                 onClick={() => goToSpread(i)}
-                className={`w-2 h-2 rounded-full transition-all duration-200 cursor-pointer ${
+                className={`w-2 h-2 rounded-full flex-shrink-0 transition-all duration-200 cursor-pointer ${
                   i === currentSpread
                     ? "bg-amber-500 scale-125"
                     : "bg-white/20 hover:bg-white/40"
                 }`}
+                style={{ width: "8px", height: "8px", minWidth: "8px", minHeight: "8px" }}
                 title={`Page/Spread ${i + 1}`}
               />
             ))}

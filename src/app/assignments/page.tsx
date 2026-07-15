@@ -101,7 +101,7 @@ export default function AssignmentsPage() {
             className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 focus:outline-none appearance-none cursor-pointer"
           >
             <option value="all">All Formats</option>
-            <option value="handwritten">Handwritten Sheets</option>
+            <option value="handwritten">Handwritten</option>
             <option value="pdf">Softcopy PDF</option>
             <option value="typed">Computer Typed</option>
           </select>

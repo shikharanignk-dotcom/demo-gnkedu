@@ -11,6 +11,7 @@ interface VideoReelProps {
   title: string;
   demoId?: Id<"demos">;
   likesCount?: number;
+  isActive?: boolean;
   onNextSubject?: () => void;
   onPrevSubject?: () => void;
 }
@@ -23,12 +24,12 @@ function extractYoutubeId(url: string): string | null {
   return (match && match[2].length === 11) ? match[2] : null;
 }
 
-export function VideoReel({ videoUrl, title, demoId, likesCount = 0, onNextSubject, onPrevSubject }: VideoReelProps) {
+export function VideoReel({ videoUrl, title, demoId, likesCount = 0, isActive = false, onNextSubject, onPrevSubject }: VideoReelProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -64,27 +65,44 @@ export function VideoReel({ videoUrl, title, demoId, likesCount = 0, onNextSubje
     }
 
     if (isYoutube) {
-      setIsPlaying(true);
+      if (iframeRef.current?.contentWindow) {
+        const command = isActive ? "playVideo" : "pauseVideo";
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: command, args: "" }),
+          "*"
+        );
+        
+        // Mute/unmute state matching
+        const muteCommand = isMuted ? "mute" : "unMute";
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: muteCommand, args: "" }),
+          "*"
+        );
+      }
+      setIsPlaying(isActive);
       return;
     }
 
     if (videoRef.current) {
       videoRef.current.muted = isMuted;
-      videoRef.current.load();
-
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch((err) => {
-            console.warn("Autoplay was blocked or failed:", err);
-            setIsPlaying(false);
-          });
+      if (isActive) {
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setIsPlaying(true);
+            })
+            .catch((err) => {
+              console.warn("Autoplay was blocked or failed:", err);
+              setIsPlaying(false);
+            });
+        }
+      } else {
+        videoRef.current.pause();
+        setIsPlaying(false);
       }
     }
-  }, [videoUrl, isMuted, isYoutube]);
+  }, [videoUrl, isMuted, isYoutube, isActive]);
 
   const togglePlay = useCallback(() => {
     if (!videoUrl || hasError) return;

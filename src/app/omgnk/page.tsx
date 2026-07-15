@@ -67,12 +67,13 @@ export default function AdminDashboardPage() {
   const [handwrittenPagesPreview, setHandwrittenPagesPreview] = useState<string[]>([]);
   const [analyticsSort, setAnalyticsSort] = useState<"views" | "orders">("views");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formTab, setFormTab] = useState<"info" | "upload" | "pricing">("info");
 
   // Form Fields
   const [formType, setFormType] = useState<"assignment" | "project" | "video">("assignment");
   const [formTitle, setFormTitle] = useState("");
   const [formDesc, setFormDesc] = useState("");
-  const [formCategory, setFormCategory] = useState("dece");
+  const [formCategory, setFormCategory] = useState("dece-assignment");
   const [formSubProgram, setFormSubProgram] = useState("");
   const [formSubject, setFormSubject] = useState("");
   const [formSemester, setFormSemester] = useState("Semester 1");
@@ -87,6 +88,13 @@ export default function AdminDashboardPage() {
   const [formYoutubeUrl, setFormYoutubeUrl] = useState("");
   const [formTechStack, setFormTechStack] = useState("");
   const [formIsFeatured, setFormIsFeatured] = useState(false);
+
+  // Multiple Uploads States
+  const [formReels, setFormReels] = useState<string[]>([]);
+  const [formHandwrittenDocs, setFormHandwrittenDocs] = useState<{ title: string; pages: string[] }[]>([]);
+  const [formPdfDocs, setFormPdfDocs] = useState<{ title: string; pages: string[] }[]>([]);
+  const [newDocTitle, setNewDocTitle] = useState("");
+  const [newReelUrlInput, setNewReelUrlInput] = useState("");
 
   // Review Form Fields
   const [revName, setRevName] = useState("");
@@ -222,12 +230,17 @@ export default function AdminDashboardPage() {
         }
       }
 
+      const defaultTitle = file.name.replace(/\.[^/.]+$/, "");
+      const docTitleVal = newDocTitle.trim() || defaultTitle;
+      const newDoc = { title: docTitleVal, pages: extractedUrls };
+
       if (type === "handwritten") {
-        setHandwrittenPagesPreview(extractedUrls);
+        setFormHandwrittenDocs((prev) => [...prev, newDoc]);
       } else {
-        setPdfPagesPreview(extractedUrls);
+        setFormPdfDocs((prev) => [...prev, newDoc]);
       }
-      alert(`Auto-extracted ${extractedUrls.length} pages for ${type === "handwritten" ? "Handwritten" : "Softcopy PDF"} preview!`);
+      setNewDocTitle("");
+      alert(`Auto-extracted ${extractedUrls.length} pages and added document "${docTitleVal}"!`);
     } catch (err: any) {
       console.error(err);
       alert("PDF conversion failed: " + err.message);
@@ -266,8 +279,8 @@ export default function AdminDashboardPage() {
     setVideoUploading(true);
     try {
       const url = await handleFileUpload(file);
-      setFormVideoReelUrl(url);
-      alert("Video uploaded successfully to Convex!");
+      setFormReels((prev) => [...prev, url]);
+      alert("Video uploaded and added to reels list!");
     } catch (err: any) {
       alert("Failed to upload video: " + err.message);
     } finally {
@@ -278,10 +291,11 @@ export default function AdminDashboardPage() {
   // Edit Button Click Handler
   const handleEditClick = (item: any) => {
     setEditingId(item._id);
+    setFormTab("info");
     setFormType(item.type);
     setFormTitle(item.title);
     setFormDesc(item.description || "");
-    setFormCategory(item.category || "dece");
+    setFormCategory(item.category || "dece-assignment");
     setFormSubProgram(item.sub_program || "");
     setFormSubject(item.subject || "");
     setFormSemester(item.semester || "Semester 1");
@@ -298,16 +312,35 @@ export default function AdminDashboardPage() {
     setFormIsFeatured(item.is_featured || false);
     setHandwrittenPagesPreview(item.handwritten_preview_images || []);
     setPdfPagesPreview(item.pdf_preview_images || []);
+
+    // Load multiple uploads lists
+    setFormReels(item.video_reels || (item.video_reel_url ? [item.video_reel_url] : []));
+    setFormHandwrittenDocs(
+      item.handwritten_docs || 
+      (item.handwritten_preview_images?.length 
+        ? [{ title: "Main solved Copy", pages: item.handwritten_preview_images }] 
+        : [])
+    );
+    setFormPdfDocs(
+      item.pdf_docs || 
+      (item.pdf_preview_images?.length 
+        ? [{ title: "Main solved Copy", pages: item.pdf_preview_images }] 
+        : [])
+    );
+    setNewDocTitle("");
+    setNewReelUrlInput("");
+
     setIsModalOpen(true);
   };
 
   // Add Button Click Handler
   const handleAddClick = (type?: "assignment" | "project" | "video") => {
     setEditingId(null);
+    setFormTab("info");
     if (type) setFormType(type);
     setFormTitle("");
     setFormDesc("");
-    setFormCategory("dece");
+    setFormCategory("dece-assignment");
     setFormSubProgram("");
     setFormSubject("");
     setFormSemester("Semester 1");
@@ -318,6 +351,13 @@ export default function AdminDashboardPage() {
     setFormShowPricePublic(true);
     setFormVideoReelUrl("");
     setFormThumbnailUrl("");
+
+    // Clear multiple uploads lists
+    setFormReels([]);
+    setFormHandwrittenDocs([]);
+    setFormPdfDocs([]);
+    setNewDocTitle("");
+    setNewReelUrlInput("");
     setFormLiveUrl("");
     setFormYoutubeUrl("");
     setFormTechStack("");
@@ -340,23 +380,26 @@ export default function AdminDashboardPage() {
       description: formDesc || undefined,
       slug,
       category: formCategory || undefined,
-      sub_program: formSubProgram || undefined,
-      subject: formSubject || undefined,
-      semester: formSemester || undefined,
+      sub_program: "",
+      subject: formSubject || formTitle,
+      semester: "Semester 1",
       university: formUniversity || undefined,
       assignment_type: formFormat || undefined,
-      price_handwritten: formPriceHandwritten || undefined,
-      price_pdf: formPricePdf || undefined,
-      show_price_public: formShowPricePublic,
-      video_reel_url: formVideoReelUrl || undefined,
-      pdf_preview_images: pdfPagesPreview.length > 0 ? pdfPagesPreview : undefined,
-      handwritten_preview_images: handwrittenPagesPreview.length > 0 ? handwrittenPagesPreview : undefined,
+      price_handwritten: 0,
+      price_pdf: 0,
+      show_price_public: false,
+      video_reel_url: formReels[0] || undefined,
+      pdf_preview_images: formPdfDocs[0]?.pages || undefined,
+      handwritten_preview_images: formHandwrittenDocs[0]?.pages || undefined,
       tech_stack: formType === "project" ? techArray : undefined,
       live_url: formType === "project" ? formLiveUrl : undefined,
       youtube_url: formYoutubeUrl || undefined,
       thumbnail_url: formThumbnailUrl || undefined,
-      file_urls: pdfPagesPreview.length > 0 ? pdfPagesPreview : undefined,
+      file_urls: formPdfDocs[0]?.pages || undefined,
       is_featured: formIsFeatured,
+      video_reels: formReels,
+      handwritten_docs: formHandwrittenDocs,
+      pdf_docs: formPdfDocs,
     };
 
     try {
@@ -378,7 +421,7 @@ export default function AdminDashboardPage() {
       // Reset
       setFormTitle("");
       setFormDesc("");
-      setFormCategory("dece");
+      setFormCategory("dece-assignment");
       setFormSubProgram("");
       setFormSubject("");
       setFormYoutubeUrl("");
@@ -388,6 +431,11 @@ export default function AdminDashboardPage() {
       setFormTechStack("");
       setPdfPagesPreview([]);
       setHandwrittenPagesPreview([]);
+      setFormReels([]);
+      setFormHandwrittenDocs([]);
+      setFormPdfDocs([]);
+      setNewDocTitle("");
+      setNewReelUrlInput("");
       setEditingId(null);
       setIsModalOpen(false);
     } catch (err: any) {
@@ -518,9 +566,7 @@ export default function AdminDashboardPage() {
       {/* Tabs list */}
       <div className="flex gap-1 overflow-x-auto border-b border-slate-200 pb-1 scrollbar-none">
         {[
-          { id: "assignments", label: "Assignments" },
-          { id: "projects", label: "Projects" },
-          { id: "videos", label: "Videos" },
+          { id: "assignments", label: "Uploads" },
           { id: "comments", label: "Comments" },
           { id: "notices", label: "Info notices" },
           { id: "reviews", label: "Reviews" },
@@ -543,11 +589,11 @@ export default function AdminDashboardPage() {
 
       {/* Tab Panel contents */}
       <div className="space-y-4">
-        {/* Assignments Tab */}
+        {/* Uploads Tab */}
         {activeTab === "assignments" && (
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Assignments & Solved Sheets</h2>
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Uploaded Subjects</h2>
               <button
                 onClick={() => handleAddClick("assignment")}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#a15c00] text-white text-[10px] font-bold uppercase cursor-pointer"
@@ -558,155 +604,58 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="space-y-2">
-              {demos
-                .filter((d: any) => d.type === "assignment")
-                .map((item: any, idx: number) => (
-                  <div key={item._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
-                    <div className="space-y-1 max-w-[60%]">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[8px] font-bold uppercase tracking-wider text-[#a15c00] bg-[#a15c00]/5 px-1.5 py-0.5 rounded border border-[#a15c00]/10">
-                          {item.subject || "SUB"}
-                        </span>
-                        {item.sub_program && (
-                          <span className="text-[8px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                            {item.sub_program}
-                          </span>
-                        )}
-                      </div>
-                      <h4 className="text-xs font-extrabold text-slate-900">{item.title}</h4>
-                      <p className="text-[9px] text-slate-400 font-bold">
-                        ₹{item.price_handwritten || 350} (H) &bull; ₹{item.price_pdf || 120} (PDF)
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      {/* Move Up */}
-                      <button
-                        onClick={() => handleMove(idx, "up")}
-                        disabled={idx === 0}
-                        className="p-1 rounded bg-slate-50 border border-slate-200 disabled:opacity-30"
-                      >
-                        <ChevronUp className="h-3 w-3" />
-                      </button>
-                      {/* Move Down */}
-                      <button
-                        onClick={() => handleMove(idx, "down")}
-                        disabled={idx === demos.filter((d: any) => d.type === "assignment").length - 1}
-                        className="p-1 rounded bg-slate-50 border border-slate-200 disabled:opacity-30"
-                      >
-                        <ChevronDown className="h-3 w-3" />
-                      </button>
-                      {/* Edit */}
-                      <button
-                        onClick={() => handleEditClick(item)}
-                        className="p-1.5 rounded bg-blue-50 border border-blue-100 text-blue-650 hover:bg-blue-100"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </button>
-                      {/* Delete */}
-                      <button
-                        onClick={() => {
-                          if (confirm("Delete this subject?")) deleteDemo({ id: item._id });
-                        }}
-                        className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600 hover:bg-red-100"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {/* Projects Tab */}
-        {activeTab === "projects" && (
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">College Coding Projects</h2>
-              <button
-                onClick={() => handleAddClick("project")}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#a15c00] text-white text-[10px] font-bold uppercase cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Add project</span>
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {demos
-                .filter((d: any) => d.type === "project")
-                .map((item: any) => (
-                  <div key={item._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
-                    <div>
-                      <span className="text-[8px] font-extrabold uppercase bg-sky-50 text-sky-600 px-2 py-0.5 rounded">
-                        {item.category || "Project"}
+              {demos.map((item: any, idx: number) => (
+                <div key={item._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                  <div className="space-y-1 max-w-[60%]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[8px] font-bold uppercase tracking-wider text-[#a15c00] bg-[#a15c00]/5 px-1.5 py-0.5 rounded border border-[#a15c00]/10">
+                        {item.subject || "SUB"}
                       </span>
-                      <h4 className="text-xs font-extrabold text-slate-900 mt-1">{item.title}</h4>
+                      {item.category && (
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-blue-650 bg-blue-50 px-1.5 py-0.5 rounded">
+                          {item.category.replace("-", " ")}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleEditClick(item)}
-                        className="p-1.5 rounded bg-blue-50 border border-blue-100 text-blue-650 hover:bg-blue-100"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm("Delete this project?")) deleteDemo({ id: item._id });
-                        }}
-                        className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600 hover:bg-red-100"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                    <h4 className="text-xs font-extrabold text-slate-900">{item.title}</h4>
                   </div>
-                ))}
-            </div>
-          </div>
-        )}
 
-        {/* Videos Tab */}
-        {activeTab === "videos" && (
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Walkthrough Videos</h2>
-              <button
-                onClick={() => handleAddClick("video")}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#a15c00] text-white text-[10px] font-bold uppercase cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Add video guide</span>
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {demos
-                .filter((d: any) => d.type === "video")
-                .map((item: any) => (
-                  <div key={item._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
-                    <div>
-                      <h4 className="text-xs font-extrabold text-slate-900">{item.title}</h4>
-                      <p className="text-[8px] text-slate-400 font-bold truncate max-w-[180px]">{item.youtube_url || item.video_reel_url}</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleEditClick(item)}
-                        className="p-1.5 rounded bg-blue-50 border border-blue-100 text-blue-650 hover:bg-blue-100"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm("Delete this video guide?")) deleteDemo({ id: item._id });
-                        }}
-                        className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600 hover:bg-red-100"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-1">
+                    {/* Move Up */}
+                    <button
+                      onClick={() => handleMove(idx, "up")}
+                      disabled={idx === 0}
+                      className="p-1 rounded bg-slate-50 border border-slate-200 disabled:opacity-30"
+                    >
+                      <ChevronUp className="h-3 w-3" />
+                    </button>
+                    {/* Move Down */}
+                    <button
+                      onClick={() => handleMove(idx, "down")}
+                      disabled={idx === demos.length - 1}
+                      className="p-1 rounded bg-slate-50 border border-slate-200 disabled:opacity-30"
+                    >
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                    {/* Edit */}
+                    <button
+                      onClick={() => handleEditClick(item)}
+                      className="p-1.5 rounded bg-blue-50 border border-blue-100 text-blue-650 hover:bg-blue-100"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </button>
+                    {/* Delete */}
+                    <button
+                      onClick={() => {
+                        if (confirm("Delete this subject?")) deleteDemo({ id: item._id });
+                      }}
+                      className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600 hover:bg-red-100"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -1043,15 +992,42 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Homepage Layout */}
-              <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200/50">
-                <h4 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Logo Branding</h4>
-                <div className="space-y-2">
+              <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/50">
+                <h4 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Logo & Hero Content Branding</h4>
+                <div className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-500 font-medium">Logo Title</label>
+                    <label className="text-[9px] text-slate-500 font-medium uppercase block">Logo Title</label>
                     <input
                       type="text"
                       value={homepageConfig.logo_text}
                       onChange={(e) => setHomepageConfig({ ...homepageConfig, logo_text: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-medium uppercase block">Hero Title text</label>
+                    <input
+                      type="text"
+                      value={homepageConfig.hero_title}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_title: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-medium uppercase block">Hero Subtitle text</label>
+                    <textarea
+                      value={homepageConfig.hero_subtitle}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_subtitle: e.target.value })}
+                      rows={2}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 resize-none font-medium"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-medium uppercase block">Paper Formats / Other Info text</label>
+                    <input
+                      type="text"
+                      value={homepageConfig.paper_formats}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, paper_formats: e.target.value })}
                       className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
                     />
                   </div>
@@ -1091,257 +1067,280 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
+            {/* Tab Bar for Subject Form */}
+            {activeTab === "assignments" && (
+              <div className="flex border-b border-slate-200 text-[9px] font-bold uppercase tracking-wider bg-slate-50 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setFormTab("info")}
+                  className={`flex-1 py-2.5 text-center border-b-2 transition-all cursor-pointer ${
+                    formTab === "info" ? "border-[#a15c00] text-[#a15c00] bg-white font-black" : "border-transparent text-slate-500 hover:bg-slate-100"
+                  }`}
+                >
+                  📝 Info
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormTab("upload")}
+                  className={`flex-1 py-2.5 text-center border-b-2 transition-all cursor-pointer ${
+                    formTab === "upload" ? "border-[#a15c00] text-[#a15c00] bg-white font-black" : "border-transparent text-slate-500 hover:bg-slate-100"
+                  }`}
+                >
+                  📂 Uploads
+                </button>
+              </div>
+            )}
+
             {/* Forms Container */}
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
-              {activeTab === "assignments" || activeTab === "projects" || activeTab === "videos" ? (
+              {activeTab === "assignments" ? (
                 <form id="demo-form" onSubmit={handleAddDemo} className="space-y-3.5">
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Subject Title</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Child Development"
-                      value={formTitle}
-                      onChange={(e) => setFormTitle(e.target.value)}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                    />
-                  </div>
+                  
+                  {/* TAB 1: BASIC INFO */}
+                  {formTab === "info" && (
+                    <div className="space-y-3.5">
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-700 font-bold uppercase">Subject Title</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Child Development"
+                          value={formTitle}
+                          onChange={(e) => setFormTitle(e.target.value)}
+                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 font-bold"
+                        />
+                      </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Description</label>
-                    <textarea
-                      placeholder="Enter subject guidelines description..."
-                      value={formDesc}
-                      onChange={(e) => setFormDesc(e.target.value)}
-                      rows={2}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none"
-                    />
-                  </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-700 font-bold uppercase">Description</label>
+                        <textarea
+                          placeholder="Enter subject guidelines description..."
+                          value={formDesc}
+                          onChange={(e) => setFormDesc(e.target.value)}
+                          rows={4}
+                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none font-medium leading-relaxed"
+                        />
+                      </div>
 
-                  {/* Course Category Selector */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-slate-500 font-bold uppercase leading-none">Course Category</label>
-                      <select
-                        value={formCategory}
-                        onChange={(e) => setFormCategory(e.target.value)}
-                        className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700"
-                      >
-                        <option value="dece">DECE</option>
-                        <option value="ma">MA</option>
-                        <option value="ba">BA</option>
-                        <option value="meg">MEG</option>
-                      </select>
+                      {/* Course Category Selector */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-500 font-bold uppercase block leading-none">Course Category</label>
+                        <select
+                          value={formCategory}
+                          onChange={(e) => setFormCategory(e.target.value)}
+                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-750 font-bold"
+                        >
+                          <option value="dece-assignment">DECE Assignment</option>
+                          <option value="dece-project">DECE Project</option>
+                          <option value="ma">MA Assignments</option>
+                          <option value="ba">BA Assignments</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-2 p-1.5 border border-slate-100 bg-slate-50 rounded-xl mt-4">
+                        <input
+                          type="checkbox"
+                          id="is-featured"
+                          checked={formIsFeatured}
+                          onChange={(e) => setFormIsFeatured(e.target.checked)}
+                          className="rounded border-slate-200 text-[#a15c00]"
+                        />
+                        <label htmlFor="is-featured" className="text-[9px] font-bold text-slate-650 cursor-pointer flex items-center gap-1">
+                          <span>Pin / Feature on Home Screen</span>
+                        </label>
+                      </div>
                     </div>
+                  )}
 
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-slate-500 font-bold uppercase leading-none">Sub-Program (e.g. MPS)</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. MPS"
-                        value={formSubProgram}
-                        onChange={(e) => setFormSubProgram(e.target.value)}
-                        className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                      />
-                    </div>
-                  </div>
-
-                  {formType === "assignment" && (
-                    <>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-[9px] text-slate-500">Subject Code</label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. DECE-1"
-                            value={formSubject}
-                            onChange={(e) => setFormSubject(e.target.value)}
-                            className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] text-slate-500">Semester/Year</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Semester 1"
-                            value={formSemester}
-                            onChange={(e) => setFormSemester(e.target.value)}
-                            className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                          />
+                  {/* TAB 2: UPLOADS & DEMOS */}
+                  {formTab === "upload" && (
+                    <div className="space-y-4">
+                      {/* Cover Thumbnail */}
+                      <div className="space-y-1 p-3 bg-slate-50 rounded-xl border border-slate-200/50">
+                        <label className="text-[9px] text-slate-700 font-bold uppercase block">Subject Cover Image</label>
+                        <div className="flex gap-2.5 items-center">
+                          {formThumbnailUrl && (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img src={formThumbnailUrl} className="w-12 h-12 object-cover rounded-lg border border-slate-200 shrink-0" alt="Thumbnail" />
+                          )}
+                          <div className="flex-1">
+                            <label className="px-3 py-1.5 rounded-lg border border-slate-250 text-[10px] text-slate-650 bg-white hover:bg-slate-50 cursor-pointer font-bold inline-block">
+                              <span>Upload Cover Image</span>
+                              <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="hidden" />
+                            </label>
+                            {thumbnailUploading && <span className="text-[8px] text-[#a15c00] ml-2 animate-pulse font-bold">Uploading...</span>}
+                          </div>
                         </div>
                       </div>
 
-                      {/* Pricing inputs */}
-                      <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200/50">
-                        <div className="space-y-1">
-                          <label className="text-[9px] text-slate-650 font-bold leading-none">Handwritten Price</label>
-                          <input
-                            type="number"
-                            value={formPriceHandwritten}
-                            onChange={(e) => setFormPriceHandwritten(parseInt(e.target.value) || 0)}
-                            className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                          />
+                      {/* Video Reels list & uploader */}
+                      <div className="space-y-3.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200/50">
+                        <div className="space-y-0.5">
+                          <label className="text-[9px] text-slate-700 font-bold uppercase block">Video Reels Walkthroughs (Multiple)</label>
+                          <p className="text-[8px] text-slate-400">Add multiple video reels links or upload video files.</p>
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] text-slate-650 font-bold leading-none">PDF Softcopy Price</label>
-                          <input
-                            type="number"
-                            value={formPricePdf}
-                            onChange={(e) => setFormPricePdf(parseInt(e.target.value) || 0)}
-                            className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                          />
-                        </div>
-                        <div className="col-span-2 flex items-center gap-2 pt-1 border-t border-slate-200/50">
-                          <input
-                            type="checkbox"
-                            id="price-toggle"
-                            checked={formShowPricePublic}
-                            onChange={(e) => setFormShowPricePublic(e.target.checked)}
-                            className="rounded border-slate-350 text-[#a15c00]"
-                          />
-                          <label htmlFor="price-toggle" className="text-[9px] text-slate-700 cursor-pointer flex items-center gap-1 font-bold">
-                            {formShowPricePublic ? <Eye className="h-3.5 w-3.5 text-[#a15c00]" /> : <EyeOff className="h-3.5 w-3.5 text-slate-400" />}
-                            <span>Show pricing on public site</span>
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Video Walkthrough url & uploader */}
-                      <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200/50">
-                        <div className="space-y-1">
-                          <label className="text-[9px] text-slate-700 font-bold uppercase block">Video Reel Link (YouTube / MP4 URL)</label>
+                        {/* Reels List */}
+                        {formReels.length > 0 && (
+                          <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
+                            {formReels.map((url, idx) => (
+                              <div key={idx} className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-200 text-[9px] text-slate-600 gap-2">
+                                <span className="truncate flex-1 font-mono">{url}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setFormReels(formReels.filter((_, i) => i !== idx))}
+                                  className="text-red-500 hover:text-red-700 p-0.5 shrink-0"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {/* Add URL field */}
+                        <div className="flex gap-2">
                           <input
                             type="text"
-                            placeholder="Direct vertical video .mp4 or YouTube link"
-                            value={formVideoReelUrl}
-                            onChange={(e) => setFormVideoReelUrl(e.target.value)}
-                            className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                            placeholder="Paste vertical reel URL (.mp4 or YouTube)"
+                            value={newReelUrlInput}
+                            onChange={(e) => setNewReelUrlInput(e.target.value)}
+                            className="flex-1 p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
                           />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (newReelUrlInput.trim()) {
+                                setFormReels([...formReels, newReelUrlInput.trim()]);
+                                setNewReelUrlInput("");
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-[#a15c00] hover:bg-[#854b00] text-white text-[9px] font-bold uppercase cursor-pointer"
+                          >
+                            Add
+                          </button>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] text-slate-400 font-bold uppercase">Or</span>
+                        {/* Add file button */}
+                        <div className="flex items-center gap-2 border-t border-slate-200/50 pt-2">
                           <label className="px-2.5 py-1 rounded-lg border border-slate-200 text-[9px] text-slate-650 bg-white hover:bg-slate-100 cursor-pointer font-bold inline-block">
                             <span>Upload Video File (.mp4)</span>
                             <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
                           </label>
-                          {videoUploading && <span className="text-[8px] text-[#a15c00] animate-pulse">Uploading...</span>}
+                          {videoUploading && <span className="text-[8px] text-[#a15c00] animate-pulse font-bold">Uploading video...</span>}
                         </div>
                       </div>
 
-                      {/* Handwritten Sample PDF Preview */}
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-700 font-bold uppercase block">Handwritten Sample PDF (Preview pages)</label>
-                        <div className="p-2.5 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center relative">
-                          <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
-                            <Upload className="h-4 w-4 text-[#a15c00] inline mr-1" />
-                            <span>Upload Handwritten PDF</span>
-                            <input
-                              type="file"
-                              accept=".pdf"
-                              onChange={(e) => handlePreviewPdfUpload(e, "handwritten")}
-                              className="hidden"
-                            />
-                          </label>
-                          {extractingType === "handwritten" && (
-                            <div className="text-[8px] font-bold text-[#a15c00] mt-1 flex items-center justify-center gap-1">
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                              <span>Converting pages...</span>
-                            </div>
-                          )}
-                          {handwrittenPagesPreview.length > 0 && (
-                            <div className="text-[8px] text-green-600 font-bold mt-1">
-                              ✓ Auto-loaded {handwrittenPagesPreview.length} handwritten preview pages
-                            </div>
-                          )}
+                      {/* Handwritten Solved PDFs (Multiple) */}
+                      <div className="space-y-3 p-3 bg-slate-55 p-3 rounded-xl border border-slate-200/60 bg-slate-50">
+                        <div className="space-y-0.5">
+                          <label className="text-[9px] text-slate-700 font-bold uppercase block">Handwritten PDF Solved Copies</label>
+                          <p className="text-[8px] text-slate-400">Manage multiple handwritten copies. Enter title and select PDF.</p>
+                        </div>
+                        {/* Handwritten Docs List */}
+                        {formHandwrittenDocs.length > 0 && (
+                          <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
+                            {formHandwrittenDocs.map((doc, idx) => (
+                              <div key={idx} className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-200 text-[9px] text-slate-650 gap-2">
+                                <div className="truncate flex-1">
+                                  <span className="font-extrabold text-[#a15c00] block">{doc.title}</span>
+                                  <span className="text-[8px] text-slate-400 block">{doc.pages.length} preview pages</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setFormHandwrittenDocs(formHandwrittenDocs.filter((_, i) => i !== idx))}
+                                  className="text-red-500 hover:text-red-700 p-0.5 shrink-0"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {/* Upload Doc inputs */}
+                        <div className="space-y-2 border-t border-slate-200/50 pt-2">
+                          <input
+                            type="text"
+                            placeholder="Enter handwritten copy name (e.g. Set-A Solved)..."
+                            value={newDocTitle}
+                            onChange={(e) => setNewDocTitle(e.target.value)}
+                            className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                          />
+                          <div className="p-2.5 rounded-xl border border-dashed border-slate-250 bg-white text-center relative">
+                            <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
+                              <Upload className="h-4 w-4 text-[#a15c00] inline mr-1" />
+                              <span>Select Solved PDF File</span>
+                              <input
+                                type="file"
+                                accept=".pdf"
+                                onChange={(e) => handlePreviewPdfUpload(e, "handwritten")}
+                                className="hidden"
+                              />
+                            </label>
+                            {extractingType === "handwritten" && (
+                              <div className="text-[8px] font-bold text-[#a15c00] mt-1 flex items-center justify-center gap-1">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                <span>Converting pages...</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      {/* Soft Copy PDF Preview */}
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-700 font-bold uppercase block">Softcopy solved PDF (Preview pages)</label>
-                        <div className="p-2.5 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center relative">
-                          <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
-                            <Upload className="h-4 w-4 text-[#a15c00] inline mr-1" />
-                            <span>Upload Softcopy PDF</span>
-                            <input
-                              type="file"
-                              accept=".pdf"
-                              onChange={(e) => handlePreviewPdfUpload(e, "pdf")}
-                              className="hidden"
-                            />
-                          </label>
-                          {extractingType === "pdf" && (
-                            <div className="text-[8px] font-bold text-[#a15c00] mt-1 flex items-center justify-center gap-1">
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                              <span>Converting pages...</span>
-                            </div>
-                          )}
-                          {pdfPagesPreview.length > 0 && (
-                            <div className="text-[8px] text-green-600 font-bold mt-1">
-                              ✓ Auto-loaded {pdfPagesPreview.length} softcopy preview pages
-                            </div>
-                          )}
+                      {/* Soft Copy Solved PDFs (Multiple) */}
+                      <div className="space-y-3 p-3 bg-slate-55 p-3 rounded-xl border border-slate-200/60 bg-slate-50">
+                        <div className="space-y-0.5">
+                          <label className="text-[9px] text-slate-700 font-bold uppercase block">Solved PDF Documents (Soft Copy)</label>
+                          <p className="text-[8px] text-slate-400">Manage multiple softcopy solved documents.</p>
                         </div>
-                      </div>
-                    </>
-                  )}
-
-                  {formType === "project" && (
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500 font-bold uppercase">Tech Stack (comma separated)</label>
-                        <input
-                           type="text"
-                           placeholder="e.g. React, Express, MySQL"
-                           value={formTechStack}
-                           onChange={(e) => setFormTechStack(e.target.value)}
-                           className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500 font-bold uppercase">Live website Link</label>
-                        <input
-                          type="text"
-                          placeholder="https://..."
-                          value={formLiveUrl}
-                          onChange={(e) => setFormLiveUrl(e.target.value)}
-                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                        />
+                        {/* Softcopy Docs List */}
+                        {formPdfDocs.length > 0 && (
+                          <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
+                            {formPdfDocs.map((doc, idx) => (
+                              <div key={idx} className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-200 text-[9px] text-slate-650 gap-2">
+                                <div className="truncate flex-1">
+                                  <span className="font-extrabold text-[#a15c00] block">{doc.title}</span>
+                                  <span className="text-[8px] text-slate-400 block">{doc.pages.length} preview pages</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setFormPdfDocs(formPdfDocs.filter((_, i) => i !== idx))}
+                                  className="text-red-500 hover:text-red-700 p-0.5 shrink-0"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {/* Upload Doc inputs */}
+                        <div className="space-y-2 border-t border-slate-200/50 pt-2">
+                          <input
+                            type="text"
+                            placeholder="Enter softcopy doc name (e.g. Solved PDF Copy 1)..."
+                            value={newDocTitle}
+                            onChange={(e) => setNewDocTitle(e.target.value)}
+                            className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                          />
+                          <div className="p-2.5 rounded-xl border border-dashed border-slate-250 bg-white text-center relative">
+                            <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
+                              <Upload className="h-4 w-4 text-[#a15c00] inline mr-1" />
+                              <span>Select Solved PDF File</span>
+                              <input
+                                type="file"
+                                accept=".pdf"
+                                onChange={(e) => handlePreviewPdfUpload(e, "pdf")}
+                                className="hidden"
+                              />
+                            </label>
+                            {extractingType === "pdf" && (
+                              <div className="text-[8px] font-bold text-[#a15c00] mt-1 flex items-center justify-center gap-1">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                <span>Converting pages...</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
-
-                  {/* Cover Thumbnail */}
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase block">Subject Cover Image</label>
-                    <div className="flex gap-2 items-center">
-                      {formThumbnailUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={formThumbnailUrl} className="w-12 h-12 object-cover rounded-lg border border-slate-200" alt="Thumbnail" />
-                      )}
-                      <div className="flex-1">
-                        <label className="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] text-slate-600 bg-slate-50 hover:bg-slate-100 cursor-pointer font-bold inline-block">
-                          <span>Upload Cover Image</span>
-                          <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="hidden" />
-                        </label>
-                        {thumbnailUploading && <span className="text-[8px] text-[#a15c00] ml-2">Uploading...</span>}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="is-featured"
-                      checked={formIsFeatured}
-                      onChange={(e) => setFormIsFeatured(e.target.checked)}
-                      className="rounded border-slate-200 text-[#a15c00]"
-                    />
-                    <label htmlFor="is-featured" className="text-[9px] font-bold text-slate-650 cursor-pointer">
-                      Feature on Home Screen
-                    </label>
-                  </div>
                 </form>
               ) : activeTab === "reviews" ? (
                 <form id="review-form" onSubmit={handleAddReview} className="space-y-3.5">
@@ -1378,21 +1377,21 @@ export default function AdminDashboardPage() {
                       value={revText}
                       onChange={(e) => setRevText(e.target.value)}
                       rows={3}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none"
+                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none font-medium leading-relaxed"
                     />
                   </div>
                 </form>
               ) : (
                 <form id="info-form" onSubmit={handleAddNotice} className="space-y-3.5">
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Notice Bulletin Title</label>
+                    <label className="text-[9px] text-slate-700 font-bold uppercase">Notice Title</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Exams scheduled dates"
+                      placeholder="e.g. IGNOU December 2026 Submission Open"
                       value={infoTitle}
                       onChange={(e) => setInfoTitle(e.target.value)}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 font-bold"
                     />
                   </div>
 
@@ -1404,7 +1403,7 @@ export default function AdminDashboardPage() {
                       value={infoContent}
                       onChange={(e) => setInfoContent(e.target.value)}
                       rows={3}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none"
+                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none font-medium leading-relaxed"
                     />
                   </div>
 
@@ -1442,7 +1441,7 @@ export default function AdminDashboardPage() {
                     ? "info-form"
                     : "demo-form"
                 }
-                disabled={submitting || uploading || extractingType !== null || thumbnailUploading}
+                disabled={submitting || uploading || extractingType !== null || thumbnailUploading || videoUploading}
                 className="px-4.5 py-1.5 rounded-lg bg-[#a15c00] hover:bg-[#854b00] text-white text-[10px] font-bold uppercase flex items-center gap-1 disabled:opacity-50 cursor-pointer"
               >
                 {submitting && <Loader2 className="h-3 w-3 animate-spin" />}

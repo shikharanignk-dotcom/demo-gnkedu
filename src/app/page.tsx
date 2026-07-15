@@ -1,63 +1,61 @@
+"use client";
+
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { fetchQuery } from "convex/nextjs";
+import { useRouter } from "next/navigation";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { CheckCircle2, ChevronRight, GraduationCap, BookOpen, Building2, FileText, HeartHandshake, Zap, Star } from "lucide-react";
+import { 
+  CheckCircle2, ChevronRight, GraduationCap, BookOpen, 
+  Building2, FileText, HeartHandshake, Zap, Star, X, ShoppingCart, HelpCircle 
+} from "lucide-react";
 
-export const dynamic = "force-dynamic";
-
-// Hardcoded program configuration matching Screenshot 1
 const PROGRAMS = [
   {
-    id: "dece",
-    title: "DECE",
-    fullName: "Diploma in Early Childhood Care",
-    badge: "Child Assignments",
+    id: "dece-assignment",
+    title: "DECE Assignment",
+    fullName: "Diploma in Early Childhood Care (Solved Sheets)",
+    badge: "Expert Written",
     icon: GraduationCap,
-    subPrograms: null,
+  },
+  {
+    id: "dece-project",
+    title: "DECE Project",
+    fullName: "DECE-4 Project Work Report & Synopsis Guide",
+    badge: "Reports & Vids",
+    icon: FileText,
   },
   {
     id: "ma",
-    title: "MA",
-    fullName: "Master of Arts (All Subjects)",
+    title: "MA Assignments",
+    fullName: "Master of Arts All Subjects (MPS, MHD, MEG, MAHI)",
     badge: "High Rated",
     icon: BookOpen,
-    subPrograms: ["MPS", "MHD", "MAHI", "MEG"],
   },
   {
     id: "ba",
-    title: "BA",
-    fullName: "Bachelor of Arts (Gen & Hons)",
+    title: "BA Assignments",
+    fullName: "Bachelor of Arts & Gen/Honors Solved Sheets",
     badge: "Best Seller",
     icon: Building2,
-    subPrograms: ["BAM", "BCOMF"],
-  },
-  {
-    id: "meg",
-    title: "MEG",
-    fullName: "MA English Literature",
-    badge: "Critical Notes",
-    icon: FileText,
-    subPrograms: null,
   },
 ];
 
-export default async function HomePage() {
-  let reviews: any[] = [];
-  let settingsObj: Record<string, any> = {};
+export default function HomePage() {
+  const router = useRouter();
 
-  try {
-    const [reviewsData, settingsData] = await Promise.all([
-      fetchQuery(api.reviews.get, { limit: 4 }),
-      fetchQuery(api.site_settings.get),
-    ]);
+  // Convex Queries
+  const siteSettings = useQuery(api.site_settings.get) || [];
+  const reviews = useQuery(api.reviews.get, { limit: 4 }) || [];
 
-    reviews = reviewsData || [];
-    settingsData?.forEach((row: any) => {
-      settingsObj[row.key] = row.value;
+  // Map settings
+  const settingsObj = useMemo(() => {
+    const obj: Record<string, any> = {};
+    siteSettings.forEach((row: any) => {
+      obj[row.key] = row.value;
     });
-  } catch (err) {
-    console.error("Convex not connected yet, loading fallbacks.");
-  }
+    return obj;
+  }, [siteSettings]);
 
   const homepageConfig = settingsObj.homepage_config || {};
   const whatsappConfig = settingsObj.whatsapp_config || {};
@@ -76,11 +74,11 @@ export default async function HomePage() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 leading-tight">
-            Verify Assignment Quality <span className="text-[#a15c00]">Before You Order</span>
+            {homepageConfig.hero_title || "Verify Assignment Quality Before You Order"}
           </h1>
 
           <p className="text-xs text-slate-500 leading-relaxed max-w-md mx-auto">
-            Trusted by thousands of IGNOU students. Get accurate, high-quality, and prompt assignment delivery at your doorstep.
+            {homepageConfig.hero_subtitle || "Trusted by thousands of IGNOU students. Get accurate, high-quality, and prompt assignment delivery at your doorstep."}
           </p>
 
           <div className="pt-2">
@@ -118,46 +116,72 @@ export default async function HomePage() {
         })}
       </section>
 
+      {/* 📊 dynamic trust statistics section */}
+      {settingsObj.counters && (
+        <section className="mx-auto max-w-xl px-4 mt-6">
+          <div className="grid grid-cols-3 gap-3 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center">
+            <div>
+              <span className="block text-xl font-heading font-extrabold text-[#a15c00] leading-none">
+                {settingsObj.counters.students || 500}+
+              </span>
+              <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider mt-2.5 block leading-none">Happy Students</span>
+            </div>
+            <div className="border-x border-slate-100">
+              <span className="block text-xl font-heading font-extrabold text-[#a15c00] leading-none">
+                {settingsObj.counters.assignments || 1000}+
+              </span>
+              <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider mt-2.5 block leading-none">Assignments</span>
+            </div>
+            <div>
+              <span className="block text-xl font-heading font-extrabold text-[#a15c00] leading-none">
+                {settingsObj.counters.projects || 50}+
+              </span>
+              <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider mt-2.5 block leading-none">Field Projects</span>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 📁 Explore Programs (Screenshot 1) */}
       <section className="mx-auto max-w-xl px-4 mt-10 space-y-4">
         <div className="flex justify-between items-end">
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <h2 className="text-sm font-heading font-extrabold text-slate-900 uppercase tracking-wider">
               Explore Programs
             </h2>
-            <p className="text-[10px] text-slate-500">
-              Hand-picked course materials for IGNOU excellence
+            <p className="text-[9px] font-bold text-slate-400">
+              Select your program to view preview demos
             </p>
           </div>
-          <Link href="/courses" className="text-[10px] font-bold text-[#a15c00] flex items-center gap-0.5">
-            <span>View All</span>
-            <ChevronRight className="h-3 w-3" />
-          </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {PROGRAMS.map((prog) => {
             const Icon = prog.icon;
             return (
               <Link
                 key={prog.id}
                 href={`/courses/${prog.id}`}
-                className="group relative bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex justify-between items-center"
+                className="group bg-white p-4 rounded-2xl border border-slate-150 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between items-start gap-4 cursor-pointer text-left relative overflow-hidden"
               >
-                {/* Left details */}
-                <div className="space-y-2 z-10">
-                  <span className="inline-block text-[8px] px-2 py-0.5 rounded-full bg-slate-50 border border-slate-100 text-slate-500 font-extrabold uppercase tracking-wide">
+                {/* Icon & Badge */}
+                <div className="flex justify-between items-center w-full">
+                  <div className="p-1.5 rounded-lg bg-amber-500/10 text-[#a15c00]">
+                    <Icon className="h-4.5 w-4.5" />
+                  </div>
+                  <span className="text-[7px] px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100 text-slate-550 font-extrabold uppercase tracking-wider">
                     {prog.badge}
                   </span>
-                  <div className="space-y-0.5">
-                    <h3 className="text-sm font-heading font-extrabold text-slate-900">{prog.title}</h3>
-                    <p className="text-[10px] text-slate-400 max-w-[200px] sm:max-w-xs">{prog.fullName}</p>
-                  </div>
                 </div>
 
-                {/* Right Icon overlay */}
-                <div className="relative z-10 flex items-center gap-1 text-[#a15c00] font-bold text-xs uppercase">
-                  <Icon className="h-10 w-10 text-slate-100 absolute right-2 -bottom-2 group-hover:scale-110 transition-transform pointer-events-none" />
+                {/* Details */}
+                <div className="space-y-0.5 z-10 w-full">
+                  <h3 className="text-xs font-heading font-extrabold text-slate-900 group-hover:text-[#a15c00] transition-colors leading-tight">
+                    {prog.title}
+                  </h3>
+                  <p className="text-[8px] text-slate-400 leading-snug line-clamp-2">
+                    {prog.fullName}
+                  </p>
                 </div>
               </Link>
             );
@@ -207,7 +231,7 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            {reviews.map((rev) => (
+            {reviews.map((rev: any) => (
               <div key={rev._id} className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-2">
                 <div className="flex items-center gap-0.5 text-amber-400">
                   {Array.from({ length: rev.rating || 5 }).map((_, i) => (
