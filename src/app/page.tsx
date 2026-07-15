@@ -15,28 +15,28 @@ const PROGRAMS = [
     id: "dece-assignment",
     title: "DECE Assignment",
     fullName: "Diploma in Early Childhood Care (Solved Sheets)",
-    badge: "Expert Written",
+    badge: "Click to Watch Demo ➔",
     icon: GraduationCap,
   },
   {
     id: "dece-project",
     title: "DECE Project",
     fullName: "DECE-4 Project Work Report & Synopsis Guide",
-    badge: "Reports & Vids",
+    badge: "Click to Watch Demo ➔",
     icon: FileText,
   },
   {
     id: "ma",
     title: "MA Assignments",
     fullName: "Master of Arts All Subjects (MPS, MHD, MEG, MAHI)",
-    badge: "High Rated",
+    badge: "Click to Watch Demo ➔",
     icon: BookOpen,
   },
   {
     id: "ba",
     title: "BA Assignments",
     fullName: "Bachelor of Arts & Gen/Honors Solved Sheets",
-    badge: "Best Seller",
+    badge: "Click to Watch Demo ➔",
     icon: Building2,
   },
 ];
@@ -147,7 +147,7 @@ export default function HomePage() {
         <div className="flex justify-between items-end">
           <div className="space-y-0.5">
             <h2 className="text-sm font-heading font-extrabold text-slate-900 uppercase tracking-wider">
-              Explore Programs
+              Watch Demo
             </h2>
             <p className="text-[9px] font-bold text-slate-400">
               Select your program to view preview demos
