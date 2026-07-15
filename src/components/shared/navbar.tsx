@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X, CheckSquare, ShieldCheck, Info } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, X, CheckSquare, ShieldCheck } from "lucide-react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/" },
@@ -15,47 +16,43 @@ const NAV_ITEMS = [
   { label: "Reviews", href: "/reviews" },
 ];
 
-const supabase = createClient();
-
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [phone, setPhone] = useState("919352483446");
-  const [logoText, setLogoText] = useState("GNK Demos");
+
+  // Fetch site settings from Convex
+  const siteSettings = useQuery(api.site_settings.get) || [];
+  
+  const settingsObj = useMemo(() => {
+    const obj: Record<string, any> = {};
+    siteSettings.forEach((row: any) => {
+      obj[row.key] = row.value;
+    });
+    return obj;
+  }, [siteSettings]);
+
+  const whatsappConfig = settingsObj.whatsapp_config || {};
+  const homepageConfig = settingsObj.homepage_config || {};
+
+  const logoText = homepageConfig.logo_text || "GNK Demos";
+  let phone = whatsappConfig.phone || "919352483446";
+  if (phone.length === 10 && !phone.startsWith("91")) {
+    phone = "91" + phone;
+  }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAdmin(!!session);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAdmin(!!session);
-    });
-
-    supabase
-      .from("site_settings")
-      .select("*")
-      .then(({ data }) => {
-        if (data) {
-          const wa = data.find((row) => row.key === "whatsapp_config")?.value;
-          const hc = data.find((row) => row.key === "homepage_config")?.value;
-          if (wa && wa.phone) {
-            let num = wa.phone;
-            if (num.length === 10 && !num.startsWith("91")) {
-              num = "91" + num;
-            }
-            setPhone(num);
-          }
-          if (hc && hc.logo_text) {
-            setLogoText(hc.logo_text);
-          }
-        }
-      });
-
-    return () => {
-      subscription.unsubscribe();
+    // Check local storage for admin session
+    const checkAuth = () => {
+      const loggedIn = localStorage.getItem("gnk_admin_logged_in") === "true";
+      setIsAdmin(loggedIn);
     };
+
+    checkAuth();
+    // Watch for custom auth events or polling
+    const interval = setInterval(checkAuth, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const isAdminRoute = pathname?.startsWith("/omgnk");
@@ -64,12 +61,13 @@ export function Navbar() {
     return (
       <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex max-w-7xl h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/omgnk" className="flex items-center gap-2 font-heading text-base font-bold tracking-tight text-slate-900">
-            <ShieldCheck className="h-5 w-5 text-brand-primary" />
-            Guru Nanak Photostat <span className="text-[10px] px-2 py-0.5 rounded bg-brand-primary-light text-brand-primary border border-brand-primary-light">Admin</span>
+          <Link href="/omgnk" className="flex items-center gap-2 font-heading text-sm font-extrabold tracking-tight text-slate-900">
+            <ShieldCheck className="h-5 w-5 text-[#a15c00]" />
+            <span>Guru Nanak Photostat</span>
+            <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-[#a15c00] border border-amber-500/20 font-bold uppercase tracking-wider">Admin</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors">
+            <Link href="/" className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors">
               Go to Website
             </Link>
           </div>
@@ -83,8 +81,8 @@ export function Navbar() {
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-1.5 font-heading text-lg font-extrabold tracking-tight text-slate-900">
-            <CheckSquare className="h-5 w-5 text-brand-primary" />
+          <Link href="/" className="flex items-center gap-1.5 font-heading text-base font-extrabold tracking-tight text-slate-900">
+            <CheckSquare className="h-5 w-5 text-[#a15c00]" />
             <span>{logoText}</span>
           </Link>
 
@@ -96,8 +94,8 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`text-xs font-semibold transition-colors hover:text-brand-primary ${
-                    isActive ? "text-brand-primary font-bold" : "text-slate-500"
+                  className={`text-[10px] font-bold uppercase tracking-wider transition-colors hover:text-[#a15c00] ${
+                    isActive ? "text-[#a15c00]" : "text-slate-500"
                   }`}
                 >
                   {item.label}
@@ -112,7 +110,7 @@ export function Navbar() {
               href={`https://wa.me/${phone}`}
               target="_blank"
               rel="noreferrer"
-              className="text-xs px-4 py-2 rounded-full bg-brand-primary text-white hover:bg-brand-primary-hover shadow-md font-semibold transition-all"
+              className="text-[10px] px-4 py-2 rounded-full bg-[#a15c00] text-white hover:bg-[#854b00] shadow-sm font-bold uppercase tracking-wider transition-all"
             >
               Order Now
             </a>
@@ -123,7 +121,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="text-slate-500 hover:text-slate-900 p-1 cursor-pointer"
+              className="text-slate-505 hover:text-slate-900 p-1 cursor-pointer"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -140,9 +138,9 @@ export function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  className={`block px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
                     isActive
-                      ? "bg-brand-primary-light text-brand-primary"
+                      ? "bg-amber-500/5 text-[#a15c00]"
                       : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
@@ -152,10 +150,10 @@ export function Navbar() {
             })}
             <div className="pt-3 px-3">
               <a
-                href="https://wa.me/919352483446"
+                href={`https://wa.me/${phone}`}
                 target="_blank"
                 rel="noreferrer"
-                className="block w-full py-2 rounded-lg bg-brand-primary hover:bg-brand-primary-hover text-white text-center font-semibold text-sm transition-all"
+                className="block w-full py-2.5 rounded-xl bg-[#a15c00] hover:bg-[#854b00] text-white text-center font-bold text-xs uppercase tracking-wider shadow-sm transition-all"
               >
                 Order on WhatsApp
               </a>

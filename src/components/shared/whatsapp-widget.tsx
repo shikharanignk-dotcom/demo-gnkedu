@@ -1,34 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { MessageSquare } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-
-const supabase = createClient();
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export function WhatsAppWidget() {
-  const [phone, setPhone] = useState("919352483446");
-  const [message, setMessage] = useState("Hello Guru Nanak Photostat, I am interested in assignments/projects and saw your demo portfolio.");
+  // Fetch settings from Convex
+  const siteSettings = useQuery(api.site_settings.get) || [];
+  
+  const settingsObj = useMemo(() => {
+    const obj: Record<string, any> = {};
+    siteSettings.forEach((row: any) => {
+      obj[row.key] = row.value;
+    });
+    return obj;
+  }, [siteSettings]);
 
-  useEffect(() => {
-    supabase
-      .from("site_settings")
-      .select("*")
-      .eq("key", "whatsapp_config")
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data && data.value) {
-          let num = data.value.phone || "919352483446";
-          if (num.length === 10 && !num.startsWith("91")) {
-            num = "91" + num;
-          }
-          setPhone(num);
-          if (data.value.message) {
-            setMessage(data.value.message);
-          }
-        }
-      });
-  }, []);
+  const whatsappConfig = settingsObj.whatsapp_config || {};
+  let phone = whatsappConfig.phone || "919352483446";
+  if (phone.length === 10 && !phone.startsWith("91")) {
+    phone = "91" + phone;
+  }
+  const message = whatsappConfig.message || "Hello Guru Nanak Photostat, I am interested in assignments/projects and saw your demo portfolio.";
 
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;

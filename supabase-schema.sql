@@ -129,3 +129,15 @@ ALTER TABLE information ENABLE ROW LEVEL SECURITY;
 -- Create Policies for information
 CREATE POLICY "Allow public read access for information" ON information FOR SELECT USING (published = true);
 CREATE POLICY "Allow admin full access for information" ON information FOR ALL TO authenticated USING (true);
+
+-- 8. Add new columns to demos for Course & Subject Restructuring
+ALTER TABLE demos ADD COLUMN IF NOT EXISTS sub_program TEXT;
+ALTER TABLE demos ADD COLUMN IF NOT EXISTS price_handwritten NUMERIC;
+ALTER TABLE demos ADD COLUMN IF NOT EXISTS price_pdf NUMERIC;
+ALTER TABLE demos ADD COLUMN IF NOT EXISTS show_price_public BOOLEAN DEFAULT true;
+ALTER TABLE demos ADD COLUMN IF NOT EXISTS video_reel_url TEXT;
+ALTER TABLE demos ADD COLUMN IF NOT EXISTS pdf_preview_images TEXT[];
+ALTER TABLE demos ADD COLUMN IF NOT EXISTS handwritten_preview_images TEXT[];
+ALTER TABLE demos ADD COLUMN IF NOT EXISTS click_count_view_pdf INTEGER DEFAULT 0;
+ALTER TABLE demos ADD COLUMN IF NOT EXISTS click_count_order INTEGER DEFAULT 0;
+

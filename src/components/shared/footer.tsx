@@ -1,33 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { CheckSquare, Mail, Phone, Clock } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-
-const supabase = createClient();
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export function Footer() {
-  const [phone, setPhone] = useState("919352483446");
-  const [logoText, setLogoText] = useState("GNK Demos");
+  // Fetch settings from Convex
+  const siteSettings = useQuery(api.site_settings.get) || [];
+  
+  const settingsObj = useMemo(() => {
+    const obj: Record<string, any> = {};
+    siteSettings.forEach((row: any) => {
+      obj[row.key] = row.value;
+    });
+    return obj;
+  }, [siteSettings]);
 
-  useEffect(() => {
-    supabase
-      .from("site_settings")
-      .select("*")
-      .then(({ data }) => {
-        if (data) {
-          const wa = data.find((row) => row.key === "whatsapp_config")?.value;
-          const hc = data.find((row) => row.key === "homepage_config")?.value;
-          if (wa && wa.phone) {
-            setPhone(wa.phone);
-          }
-          if (hc && hc.logo_text) {
-            setLogoText(hc.logo_text);
-          }
-        }
-      });
-  }, []);
+  const whatsappConfig = settingsObj.whatsapp_config || {};
+  const homepageConfig = settingsObj.homepage_config || {};
+
+  const logoText = homepageConfig.logo_text || "GNK Demos";
+  const phone = whatsappConfig.phone || "919352483446";
 
   const displayPhone = phone.startsWith("91") && phone.length === 12 
     ? `+91 ${phone.slice(2, 7)} ${phone.slice(7)}` 
@@ -39,8 +34,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Info */}
           <div className="md:col-span-2 space-y-3">
-            <Link href="/" className="flex items-center gap-2 font-heading text-lg font-bold text-slate-900">
-              <CheckSquare className="h-5 w-5 text-brand-primary" />
+            <Link href="/" className="flex items-center gap-2 font-heading text-base font-extrabold text-slate-900">
+              <CheckSquare className="h-5 w-5 text-[#a15c00]" />
               <span>{logoText}</span>
             </Link>
             <p className="text-xs text-slate-500 max-w-sm leading-relaxed">

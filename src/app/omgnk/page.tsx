@@ -1,64 +1,88 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Plus, Trash2, LogOut, FileText, Globe, PlayCircle, Star, Settings, Loader2, Upload, X, Bell } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-
-const supabase = createClient();
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { 
+  ShieldCheck, Plus, Trash2, LogOut, FileText, Globe, PlayCircle, Star, 
+  Settings, Loader2, Upload, X, Bell, ChevronUp, ChevronDown, Eye, EyeOff, BarChart2, Edit
+} from "lucide-react";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("assignments");
-  const [demos, setDemos] = useState<any[]>([]);
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [notices, setNotices] = useState<any[]>([]);
-  const [counters, setCounters] = useState<any>({ students: 500, assignments: 1000, projects: 50 });
-  const [whatsapp, setWhatsapp] = useState<any>({ phone: "919352483446", message: "" });
-  const [homepageConfig, setHomepageConfig] = useState<any>({
-    hero_title: "Guru Nanak Photostat Fatehabad",
-    hero_subtitle: "Verify Assignment Sheet Quality Before You Order.",
-    theme_color: "indigo",
-    show_assignments: true,
-    show_projects: true,
-    show_videos: true,
-    logo_text: "GNK Demos",
-    assignments_tab_label: "Handwritten Sheets",
-    projects_tab_label: "College Projects",
-    videos_tab_label: "Video Demos",
-    paper_formats: "Handwritten sheets, Softcopy PDF, Computer Typed",
-    assignment_item_type_label: "Assignment File",
-    project_item_type_label: "College Coding Project",
-  });
+  
+  // Auth state
+  const [authorized, setAuthorized] = useState(false);
 
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("gnk_admin_logged_in");
+    if (isLoggedIn !== "true") {
+      router.replace("/omgnk/login");
+    } else {
+      setAuthorized(true);
+    }
+  }, [router]);
+
+  // Convex Queries
+  const demos = useQuery(api.demos.list) || [];
+  const reviews = useQuery(api.reviews.list) || [];
+  const notices = useQuery(api.information.list) || [];
+  const siteSettings = useQuery(api.site_settings.get) || [];
+  const commentsList = useQuery(api.comments.getAll) || [];
+
+  // Convex Mutations
+  const createDemo = useMutation(api.demos.create);
+  const updateDemo = useMutation(api.demos.update);
+  const deleteDemo = useMutation(api.demos.remove);
+  const updateOrder = useMutation(api.demos.updateOrder);
+  const generateUploadUrl = useMutation(api.demos.generateUploadUrl);
+  const getStorageUrl = useMutation(api.demos.getStorageUrl);
+  
+  const createReview = useMutation(api.reviews.create);
+  const deleteReview = useMutation(api.reviews.remove);
+  
+  const createNotice = useMutation(api.information.create);
+  const deleteNotice = useMutation(api.information.remove);
+
+  const upsertSettings = useMutation(api.site_settings.upsert);
+
+  const addComment = useMutation(api.comments.add);
+  const deleteComment = useMutation(api.comments.remove);
+  const togglePublishComment = useMutation(api.comments.togglePublish);
+
+  // General state
+  const [activeTab, setActiveTab] = useState("assignments");
+  const [commentDemoId, setCommentDemoId] = useState("");
+  const [commentName, setCommentName] = useState("");
+  const [commentText, setCommentText] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [pdfExtracting, setPdfExtracting] = useState(false);
+  const [extractingType, setExtractingType] = useState<"handwritten" | "pdf" | null>(null);
+  const [thumbnailUploading, setThumbnailUploading] = useState(false);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [pdfPagesPreview, setPdfPagesPreview] = useState<string[]>([]);
+  const [handwrittenPagesPreview, setHandwrittenPagesPreview] = useState<string[]>([]);
+  const [analyticsSort, setAnalyticsSort] = useState<"views" | "orders">("views");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form Fields
   const [formType, setFormType] = useState<"assignment" | "project" | "video">("assignment");
   const [formTitle, setFormTitle] = useState("");
-  const [formSubject, setFormSubject] = useState("");
-  const [formSemester, setFormSemester] = useState("");
-  const [formUniversity, setFormUniversity] = useState("");
-  const [formFormat, setFormFormat] = useState("");
-  const [formCategory, setFormCategory] = useState("");
-
-  useEffect(() => {
-    if (isModalOpen) {
-      const parsedFormats = (homepageConfig.paper_formats || "Handwritten sheets, Softcopy PDF, Computer Typed")
-        .split(",")
-        .map((s: string) => s.trim())
-        .filter(Boolean);
-      if (parsedFormats.length > 0) {
-        setFormFormat(parsedFormats[0]);
-      } else {
-        setFormFormat("handwritten");
-      }
-    }
-  }, [isModalOpen, homepageConfig.paper_formats]);
-  const [formVideoSource, setFormVideoSource] = useState<"youtube" | "file">("youtube");
   const [formDesc, setFormDesc] = useState("");
+  const [formCategory, setFormCategory] = useState("dece");
+  const [formSubProgram, setFormSubProgram] = useState("");
+  const [formSubject, setFormSubject] = useState("");
+  const [formSemester, setFormSemester] = useState("Semester 1");
+  const [formUniversity, setFormUniversity] = useState("IGNOU");
+  const [formFormat, setFormFormat] = useState("handwritten");
+  const [formPriceHandwritten, setFormPriceHandwritten] = useState(350);
+  const [formPricePdf, setFormPricePdf] = useState(120);
+  const [formShowPricePublic, setFormShowPricePublic] = useState(true);
+  const [formVideoReelUrl, setFormVideoReelUrl] = useState("");
+  const [formThumbnailUrl, setFormThumbnailUrl] = useState("");
   const [formLiveUrl, setFormLiveUrl] = useState("");
   const [formYoutubeUrl, setFormYoutubeUrl] = useState("");
   const [formTechStack, setFormTechStack] = useState("");
@@ -68,7 +92,7 @@ export default function AdminDashboardPage() {
   const [revName, setRevName] = useState("");
   const [revText, setRevText] = useState("");
   const [revRating, setRevRating] = useState(5);
-  const [revUniv, setRevUniv] = useState("");
+  const [revUniv, setRevUniv] = useState("IGNOU");
 
   // Info Form Fields
   const [infoTitle, setInfoTitle] = useState("");
@@ -76,110 +100,231 @@ export default function AdminDashboardPage() {
   const [infoCategory, setInfoCategory] = useState("Notice");
   const [infoIsImportant, setInfoIsImportant] = useState(false);
 
-  // File Upload states
-  const [uploading, setUploading] = useState(false);
-  const [uploadedFileUrl, setUploadedFileUrl] = useState("");
-  const [uploadedThumbnailUrl, setUploadedThumbnailUrl] = useState("");
+  // Map settings
+  const settingsObj = useMemo(() => {
+    const obj: Record<string, any> = {};
+    siteSettings.forEach((row: any) => {
+      obj[row.key] = row.value;
+    });
+    return obj;
+  }, [siteSettings]);
+
+  const [counters, setCounters] = useState({ students: 500, assignments: 1000, projects: 50 });
+  const [whatsapp, setWhatsapp] = useState({ phone: "919352483446", message: "" });
+  const [homepageConfig, setHomepageConfig] = useState({
+    hero_title: "Guru Nanak Photostat Fatehabad",
+    hero_subtitle: "Verify Assignment Sheet Quality Before You Order.",
+    theme_color: "indigo",
+    logo_text: "GNK Demos",
+    paper_formats: "Handwritten sheets, Softcopy PDF, Computer Typed",
+  });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.replace("/omgnk/login");
-      } else {
-        fetchAdminData();
-      }
-    });
-  }, [router, supabase.auth]);
+    if (settingsObj.counters) setCounters(settingsObj.counters);
+    if (settingsObj.whatsapp_config) setWhatsapp(settingsObj.whatsapp_config);
+    if (settingsObj.homepage_config) setHomepageConfig({ ...homepageConfig, ...settingsObj.homepage_config });
+  }, [settingsObj]);
 
-  const fetchAdminData = async () => {
-    setLoading(true);
-    try {
-      const { data: demosData } = await supabase
-        .from("demos")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (demosData) setDemos(demosData);
-
-      const { data: reviewsData } = await supabase
-        .from("reviews")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (reviewsData) setReviews(reviewsData);
-
-      const { data: infoData } = await supabase
-        .from("information")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (infoData) setNotices(infoData);
-
-      const { data: settingsData } = await supabase
-        .from("site_settings")
-        .select("*");
-
-      if (settingsData) {
-        const cnt = settingsData.find((s) => s.key === "counters")?.value;
-        const wa = settingsData.find((s) => s.key === "whatsapp_config")?.value;
-        const hc = settingsData.find((s) => s.key === "homepage_config")?.value;
-        if (cnt) setCounters(cnt);
-        if (wa) setWhatsapp(wa);
-        if (hc) setHomepageConfig({
-          hero_title: hc.hero_title || "Guru Nanak Photostat Fatehabad",
-          hero_subtitle: hc.hero_subtitle || "Verify Assignment Sheet Quality Before You Order.",
-          theme_color: hc.theme_color || "indigo",
-          show_assignments: hc.show_assignments !== false,
-          show_projects: hc.show_projects !== false,
-          show_videos: hc.show_videos !== false,
-          logo_text: hc.logo_text || "GNK Demos",
-          assignments_tab_label: hc.assignments_tab_label || "Handwritten Sheets",
-          projects_tab_label: hc.projects_tab_label || "College Projects",
-          videos_tab_label: hc.videos_tab_label || "Video Demos",
-          paper_formats: hc.paper_formats || "Handwritten sheets, Softcopy PDF, Computer Typed",
-          assignment_item_type_label: hc.assignment_item_type_label || "Assignment File",
-          project_item_type_label: hc.project_item_type_label || "College Coding Project",
-        });
-      }
-    } catch (err) {
-      console.error("Error loading admin dashboard datasets:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    localStorage.removeItem("gnk_admin_logged_in");
     router.replace("/omgnk/login");
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "file" | "thumbnail") => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  // Direct Convex upload handler
+  const handleFileUpload = async (file: File): Promise<string> => {
     setUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-      const bucketName = type === "thumbnail" ? "thumbnails" : "demo-files";
-
-      const { data, error } = await supabase.storage
-        .from(bucketName)
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(fileName);
-
-      if (type === "thumbnail") {
-        setUploadedThumbnailUrl(publicUrl);
-      } else {
-        setUploadedFileUrl(publicUrl);
+      const uploadUrl = await generateUploadUrl();
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      const { storageId } = await response.json();
+      
+      // Use the Convex mutation to get the actual public URL
+      // This returns a proper CDN URL that works for images, videos, and PDFs
+      const publicUrl = await getStorageUrl({ storageId });
+      if (publicUrl) {
+        return publicUrl;
       }
-    } catch (err: any) {
-      alert(`File upload failed: ${err.message || "Unknown storage error"}`);
+      
+      // Fallback: construct URL using .cloud domain (Convex serves storage on .cloud, NOT .site)
+      const cloudBase = process.env.NEXT_PUBLIC_CONVEX_URL || "";
+      return `${cloudBase}/api/storage/${storageId}`;
+    } catch (e: any) {
+      alert("File upload failed: " + e.message);
+      throw e;
     } finally {
       setUploading(false);
     }
+  };
+
+  // Preview PDF page auto-converter (Client-side rendering to watermarked JPEGs)
+  const handlePreviewPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "handwritten" | "pdf") => {
+    const file = e.target.files?.[0];
+    if (!file || file.type !== "application/pdf") {
+      alert("Please upload a valid PDF file.");
+      return;
+    }
+
+    setExtractingType(type);
+    try {
+      if (!(window as any).pdfjsLib) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js";
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      }
+
+      const pdfjsLib = (window as any).pdfjsLib;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pagesToExtract = Math.min(pdf.numPages, 5);
+      const extractedUrls: string[] = [];
+
+      for (let i = 1; i <= pagesToExtract; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+        
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        if (ctx) {
+          await page.render({ canvasContext: ctx, viewport }).promise;
+
+          ctx.save();
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate(-Math.PI / 6);
+          ctx.font = "bold 24px Arial";
+          ctx.fillStyle = "rgba(161, 92, 0, 0.12)";
+          ctx.textAlign = "center";
+          ctx.fillText("GURU NANAK PHOTOSTAT", 0, -20);
+          ctx.fillText("DEMO PREVIEW ONLY", 0, 20);
+          ctx.restore();
+
+          const blob = await new Promise<Blob | null>((resolve) => {
+            canvas.toBlob((b) => resolve(b), "image/jpeg", 0.85);
+          });
+
+          if (blob) {
+            const pageFile = new File([blob], `page-${i}.jpg`, { type: "image/jpeg" });
+            const pageUrl = await handleFileUpload(pageFile);
+            extractedUrls.push(pageUrl);
+          }
+        }
+      }
+
+      if (type === "handwritten") {
+        setHandwrittenPagesPreview(extractedUrls);
+      } else {
+        setPdfPagesPreview(extractedUrls);
+      }
+      alert(`Auto-extracted ${extractedUrls.length} pages for ${type === "handwritten" ? "Handwritten" : "Softcopy PDF"} preview!`);
+    } catch (err: any) {
+      console.error(err);
+      alert("PDF conversion failed: " + err.message);
+    } finally {
+      setExtractingType(null);
+    }
+  };
+
+  // Thumbnail Image Uploader
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setThumbnailUploading(true);
+    try {
+      const url = await handleFileUpload(file);
+      setFormThumbnailUrl(url);
+      alert("Thumbnail uploaded successfully!");
+    } catch (err: any) {
+      alert("Failed to upload thumbnail: " + err.message);
+    } finally {
+      setThumbnailUploading(false);
+    }
+  };
+
+  // Video Reel File Uploader
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      alert("Please select a valid video file (.mp4, .webm, etc.)");
+      return;
+    }
+
+    setVideoUploading(true);
+    try {
+      const url = await handleFileUpload(file);
+      setFormVideoReelUrl(url);
+      alert("Video uploaded successfully to Convex!");
+    } catch (err: any) {
+      alert("Failed to upload video: " + err.message);
+    } finally {
+      setVideoUploading(false);
+    }
+  };
+
+  // Edit Button Click Handler
+  const handleEditClick = (item: any) => {
+    setEditingId(item._id);
+    setFormType(item.type);
+    setFormTitle(item.title);
+    setFormDesc(item.description || "");
+    setFormCategory(item.category || "dece");
+    setFormSubProgram(item.sub_program || "");
+    setFormSubject(item.subject || "");
+    setFormSemester(item.semester || "Semester 1");
+    setFormUniversity(item.university || "IGNOU");
+    setFormFormat(item.assignment_type || "handwritten");
+    setFormPriceHandwritten(item.price_handwritten || 350);
+    setFormPricePdf(item.price_pdf || 120);
+    setFormShowPricePublic(item.show_price_public !== false);
+    setFormVideoReelUrl(item.video_reel_url || "");
+    setFormThumbnailUrl(item.thumbnail_url || "");
+    setFormLiveUrl(item.live_url || "");
+    setFormYoutubeUrl(item.youtube_url || "");
+    setFormTechStack(item.tech_stack ? item.tech_stack.join(", ") : "");
+    setFormIsFeatured(item.is_featured || false);
+    setHandwrittenPagesPreview(item.handwritten_preview_images || []);
+    setPdfPagesPreview(item.pdf_preview_images || []);
+    setIsModalOpen(true);
+  };
+
+  // Add Button Click Handler
+  const handleAddClick = (type?: "assignment" | "project" | "video") => {
+    setEditingId(null);
+    if (type) setFormType(type);
+    setFormTitle("");
+    setFormDesc("");
+    setFormCategory("dece");
+    setFormSubProgram("");
+    setFormSubject("");
+    setFormSemester("Semester 1");
+    setFormUniversity("IGNOU");
+    setFormFormat("handwritten");
+    setFormPriceHandwritten(350);
+    setFormPricePdf(120);
+    setFormShowPricePublic(true);
+    setFormVideoReelUrl("");
+    setFormThumbnailUrl("");
+    setFormLiveUrl("");
+    setFormYoutubeUrl("");
+    setFormTechStack("");
+    setFormIsFeatured(false);
+    setPdfPagesPreview([]);
+    setHandwrittenPagesPreview([]);
+    setIsModalOpen(true);
   };
 
   const handleAddDemo = async (e: React.FormEvent) => {
@@ -187,44 +332,66 @@ export default function AdminDashboardPage() {
     setSubmitting(true);
 
     const slug = formTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString().slice(-4);
-    const techArray = formTechStack ? formTechStack.split(",").map((t) => t.trim()) : [];
+    const techArray = formTechStack ? formTechStack.split(",").map((t: string) => t.trim()) : [];
+
+    const fields = {
+      type: formType,
+      title: formTitle,
+      description: formDesc || undefined,
+      slug,
+      category: formCategory || undefined,
+      sub_program: formSubProgram || undefined,
+      subject: formSubject || undefined,
+      semester: formSemester || undefined,
+      university: formUniversity || undefined,
+      assignment_type: formFormat || undefined,
+      price_handwritten: formPriceHandwritten || undefined,
+      price_pdf: formPricePdf || undefined,
+      show_price_public: formShowPricePublic,
+      video_reel_url: formVideoReelUrl || undefined,
+      pdf_preview_images: pdfPagesPreview.length > 0 ? pdfPagesPreview : undefined,
+      handwritten_preview_images: handwrittenPagesPreview.length > 0 ? handwrittenPagesPreview : undefined,
+      tech_stack: formType === "project" ? techArray : undefined,
+      live_url: formType === "project" ? formLiveUrl : undefined,
+      youtube_url: formYoutubeUrl || undefined,
+      thumbnail_url: formThumbnailUrl || undefined,
+      file_urls: pdfPagesPreview.length > 0 ? pdfPagesPreview : undefined,
+      is_featured: formIsFeatured,
+    };
 
     try {
-      const { error } = await supabase.from("demos").insert({
-        type: formType,
-        title: formTitle,
-        description: formDesc,
-        slug,
-        subject: formType === "assignment" ? formSubject : null,
-        semester: formType === "assignment" ? formSemester : null,
-        university: formType === "assignment" ? formUniversity : null,
-        assignment_type: formType === "assignment" ? formFormat : null,
-        tech_stack: formType === "project" ? techArray : null,
-        live_url: formType === "project" ? formLiveUrl : null,
-        youtube_url: formType === "project" ? formYoutubeUrl : (formType === "video" && formVideoSource === "youtube" ? formYoutubeUrl : null),
-        category: formCategory,
-        thumbnail_url: uploadedThumbnailUrl || "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=400",
-        file_urls: uploadedFileUrl ? [uploadedFileUrl] : [],
-        is_featured: formIsFeatured,
-      });
+      if (editingId) {
+        await updateDemo({
+          id: editingId as any,
+          ...fields,
+        });
+        alert("Subject updated successfully!");
+      } else {
+        await createDemo({
+          ...fields,
+          sort_order: demos.length,
+          published: true,
+        });
+        alert("Subject created successfully!");
+      }
 
-      if (error) throw error;
-
+      // Reset
       setFormTitle("");
       setFormDesc("");
+      setFormCategory("dece");
+      setFormSubProgram("");
       setFormSubject("");
-      setFormSemester("");
-      setFormCategory("");
-      setFormTechStack("");
-      setFormLiveUrl("");
       setFormYoutubeUrl("");
-      setUploadedFileUrl("");
-      setUploadedThumbnailUrl("");
-      setFormVideoSource("youtube");
+      setFormVideoReelUrl("");
+      setFormThumbnailUrl("");
+      setFormLiveUrl("");
+      setFormTechStack("");
+      setPdfPagesPreview([]);
+      setHandwrittenPagesPreview([]);
+      setEditingId(null);
       setIsModalOpen(false);
-      fetchAdminData();
     } catch (err: any) {
-      alert(`Insert failed: ${err.message}`);
+      alert("Failed to save item: " + err.message);
     } finally {
       setSubmitting(false);
     }
@@ -233,52 +400,41 @@ export default function AdminDashboardPage() {
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-
     try {
-      const { error } = await supabase.from("reviews").insert({
+      await createReview({
         student_name: revName,
         rating: revRating,
         review_text: revText,
-        university: revUniv,
+        university: revUniv || undefined,
         verified: true,
         published: true,
       });
-
-      if (error) throw error;
-
       setRevName("");
       setRevText("");
-      setRevUniv("");
       setIsModalOpen(false);
-      fetchAdminData();
     } catch (err: any) {
-      alert(`Failed to add review: ${err.message}`);
+      alert("Failed to add review: " + err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleAddInfo = async (e: React.FormEvent) => {
+  const handleAddNotice = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-
     try {
-      const { error } = await supabase.from("information").insert({
+      await createNotice({
         title: infoTitle,
         content: infoContent,
         category: infoCategory,
         is_important: infoIsImportant,
         published: true,
       });
-
-      if (error) throw error;
-
       setInfoTitle("");
       setInfoContent("");
       setIsModalOpen(false);
-      fetchAdminData();
     } catch (err: any) {
-      alert(`Failed to add information: ${err.message}`);
+      alert("Failed to create announcement: " + err.message);
     } finally {
       setSubmitting(false);
     }
@@ -287,596 +443,618 @@ export default function AdminDashboardPage() {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-
     try {
-      console.log("Saving site settings counters:", counters);
-      const { error: err1 } = await supabase
-        .from("site_settings")
-        .upsert({ key: "counters", value: counters }, { onConflict: "key" });
-
-      console.log("Saving site settings whatsapp:", whatsapp);
-      const { error: err2 } = await supabase
-        .from("site_settings")
-        .upsert({ key: "whatsapp_config", value: whatsapp }, { onConflict: "key" });
-
-      console.log("Saving site settings homepageConfig:", homepageConfig);
-      const { error: err3 } = await supabase
-        .from("site_settings")
-        .upsert({ key: "homepage_config", value: homepageConfig }, { onConflict: "key" });
-
-      if (err1 || err2 || err3) {
-        const activeErr = err1 || err2 || err3;
-        console.error("Upsert error details:", err1, err2, err3);
-        throw new Error(activeErr?.message || "Database write operation failed.");
-      }
-
-      alert("Settings updated successfully!");
+      await Promise.all([
+        upsertSettings({ key: "counters", value: counters }),
+        upsertSettings({ key: "whatsapp_config", value: whatsapp }),
+        upsertSettings({ key: "homepage_config", value: homepageConfig }),
+      ]);
+      alert("Convex Settings updated successfully!");
     } catch (err: any) {
-      console.error("Failed to save settings:", err);
-      alert(`Failed to save settings: ${err.message || JSON.stringify(err)}`);
+      alert("Failed to save settings: " + err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteDemo = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this demo item?")) return;
-    const { error } = await supabase.from("demos").delete().eq("id", id);
-    if (error) alert(`Delete failed: ${error.message}`);
-    else fetchAdminData();
+  // Reordering handlers
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const list = [...demos];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+
+    // Swap sort order values
+    const temp = list[index].sort_order;
+    list[index].sort_order = list[targetIndex].sort_order;
+    list[targetIndex].sort_order = temp;
+
+    const payload = list.map((item: any) => ({ id: item._id, sort_order: item.sort_order }));
+    try {
+      await updateOrder({ orders: payload });
+    } catch (e: any) {
+      alert("Order swap failed: " + e.message);
+    }
   };
 
-  const handleDeleteReview = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this review?")) return;
-    const { error } = await supabase.from("reviews").delete().eq("id", id);
-    if (error) alert(`Delete failed: ${error.message}`);
-    else fetchAdminData();
-  };
+  // Sorted Analytics items
+  const sortedAnalytics = useMemo(() => {
+    const list = [...demos].filter((d: any) => d.type === "assignment");
+    if (analyticsSort === "views") {
+      return list.sort((a, b) => (b.click_count_view_pdf || 0) - (a.click_count_view_pdf || 0));
+    } else {
+      return list.sort((a, b) => (b.click_count_order || 0) - (a.click_count_order || 0));
+    }
+  }, [demos, analyticsSort]);
 
-  const handleDeleteNotice = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this announcement?")) return;
-    const { error } = await supabase.from("information").delete().eq("id", id);
-    if (error) alert(`Delete failed: ${error.message}`);
-    else fetchAdminData();
-  };
-
-  if (loading) {
+  if (!authorized) {
     return (
-      <div className="w-full flex-1 flex flex-col items-center justify-center space-y-3 bg-bg-page">
-        <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
-        <p className="text-xs text-text-muted">Loading administration dashboard...</p>
+      <div className="w-full flex-1 flex flex-col items-center justify-center space-y-3 bg-slate-50 min-h-screen">
+        <Loader2 className="h-8 w-8 text-[#a15c00] animate-spin" />
+        <p className="text-xs text-slate-500">Checking auth token...</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full mx-auto max-w-5xl px-4 py-8 space-y-8 bg-bg-page">
-      {/* Dashboard Top Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-100 shadow-premium">
+    <div className="w-full mx-auto max-w-xl px-4 py-8 space-y-6 bg-slate-50 min-h-screen pb-24">
+      {/* Header */}
+      <div className="flex justify-between items-center bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
         <div className="space-y-0.5">
-          <h1 className="text-lg font-heading font-extrabold text-slate-900 flex items-center gap-1.5">
-            <ShieldCheck className="h-5.5 w-5.5 text-indigo-600" />
+          <h1 className="text-base font-heading font-extrabold text-slate-900 flex items-center gap-1.5">
+            <ShieldCheck className="h-5 w-5 text-[#a15c00]" />
             <span>Admin Control Panel</span>
           </h1>
-          <p className="text-xs text-text-muted">Manage portfolio contents and track visitor numbers.</p>
+          <p className="text-[10px] text-slate-400">Manage course catalogs, prices, and analyze clicks.</p>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1 px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold uppercase transition-colors cursor-pointer"
+          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold uppercase transition-colors cursor-pointer"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-3.5 w-3.5" />
           <span>Sign Out</span>
         </button>
       </div>
 
       {/* Tabs list */}
-      <div className="flex gap-1.5 overflow-x-auto border-b border-slate-200 pb-2">
+      <div className="flex gap-1 overflow-x-auto border-b border-slate-200 pb-1 scrollbar-none">
         {[
-          { id: "assignments", label: "Assignments", icon: FileText },
-          { id: "projects", label: "Projects", icon: Globe },
-          { id: "videos", label: "Video Demos", icon: PlayCircle },
-          { id: "info", label: "Important Info", icon: Bell },
-          { id: "reviews", label: "Reviews", icon: Star },
-          { id: "settings", label: "Site Settings", icon: Settings },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 ${
-                isActive ? "bg-indigo-600 text-white shadow-sm" : "text-slate-500 hover:bg-slate-100"
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+          { id: "assignments", label: "Assignments" },
+          { id: "projects", label: "Projects" },
+          { id: "videos", label: "Videos" },
+          { id: "comments", label: "Comments" },
+          { id: "notices", label: "Info notices" },
+          { id: "reviews", label: "Reviews" },
+          { id: "analytics", label: "Clicks Analytics" },
+          { id: "settings", label: "Settings" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-3.5 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider shrink-0 transition-all cursor-pointer ${
+              activeTab === tab.id
+                ? "bg-[#a15c00] text-white shadow-sm"
+                : "text-slate-500 hover:bg-white"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Tab Panel Content */}
-      <div className="w-full">
-        {/* Tab 1: Assignments list */}
+      {/* Tab Panel contents */}
+      <div className="space-y-4">
+        {/* Assignments Tab */}
         {activeTab === "assignments" && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <h2 className="text-sm font-heading font-bold text-slate-900">Showcase Assignments</h2>
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Assignments & Solved Sheets</h2>
               <button
-                onClick={() => {
-                  setFormType("assignment");
-                  setIsModalOpen(true);
-                }}
-                className="flex items-center gap-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase transition-all cursor-pointer"
+                onClick={() => handleAddClick("assignment")}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#a15c00] text-white text-[10px] font-bold uppercase cursor-pointer"
               >
-                <Plus className="h-4 w-4" />
-                <span>Add Assignment</span>
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add subject</span>
               </button>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto shadow-premium">
-              <table className="w-full text-left border-collapse text-xs min-w-[500px]">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold uppercase tracking-wider">
-                    <th className="p-3">Title</th>
-                    <th className="p-3">Category</th>
-                    <th className="p-3">Subject</th>
-                    <th className="p-3">Format</th>
-                    <th className="p-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {demos
-                    .filter((d) => d.type === "assignment")
-                    .map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50 text-slate-600">
-                        <td className="p-3 font-semibold text-slate-900">{item.title}</td>
-                        <td className="p-3">{item.category}</td>
-                        <td className="p-3">{item.subject}</td>
-                        <td className="p-3 uppercase">{item.assignment_type}</td>
-                        <td className="p-3 text-right">
-                          <button
-                            onClick={() => handleDeleteDemo(item.id)}
-                            className="p-1.5 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 transition-colors"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Tab 2: Projects list */}
-        {activeTab === "projects" && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-sm font-heading font-bold text-slate-900">Showcase Projects</h2>
-              <button
-                onClick={() => {
-                  setFormType("project");
-                  setIsModalOpen(true);
-                }}
-                className="flex items-center gap-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase transition-all cursor-pointer"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add Project</span>
-              </button>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto shadow-premium">
-              <table className="w-full text-left border-collapse text-xs min-w-[500px]">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold uppercase tracking-wider">
-                    <th className="p-3">Project Title</th>
-                    <th className="p-3">Category</th>
-                    <th className="p-3">Tech Stack</th>
-                    <th className="p-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {demos
-                    .filter((d) => d.type === "project")
-                    .map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50 text-slate-600">
-                        <td className="p-3 font-semibold text-slate-900">{item.title}</td>
-                        <td className="p-3">{item.category}</td>
-                        <td className="p-3">
-                          <div className="flex gap-1 flex-wrap">
-                            {item.tech_stack?.map((t: string) => (
-                              <span key={t} className="px-1.5 py-0.5 rounded bg-sky-50 text-sky-600 text-[8px]">
-                                {t}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="p-3 text-right">
-                          <button
-                            onClick={() => handleDeleteDemo(item.id)}
-                            className="p-1.5 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 transition-colors"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Tab: Videos list */}
-        {activeTab === "videos" && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-sm font-heading font-bold text-slate-900">Showcase Videos / PDFs</h2>
-              <button
-                onClick={() => {
-                  setFormType("video");
-                  setFormVideoSource("youtube");
-                  setIsModalOpen(true);
-                }}
-                className="flex items-center gap-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase transition-all cursor-pointer"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add Video Demo</span>
-              </button>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto shadow-premium">
-              <table className="w-full text-left border-collapse text-xs min-w-[500px]">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold uppercase tracking-wider">
-                    <th className="p-3">Video Title</th>
-                    <th className="p-3">Category</th>
-                    <th className="p-3">Source Type</th>
-                    <th className="p-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {demos
-                    .filter((d) => d.type === "video")
-                    .map((item) => {
-                      const isDirectFile = item.file_urls && item.file_urls.length > 0;
-                      const sourceLabel = isDirectFile 
-                        ? (item.file_urls[0].endsWith(".pdf") ? "Uploaded PDF" : "Uploaded Video") 
-                        : "YouTube Link";
-                      return (
-                        <tr key={item.id} className="hover:bg-slate-50 text-slate-600">
-                          <td className="p-3 font-semibold text-slate-900">{item.title}</td>
-                          <td className="p-3">{item.category}</td>
-                          <td className="p-3">
-                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                              isDirectFile ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
-                            }`}>
-                              {sourceLabel}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right">
-                            <button
-                              onClick={() => handleDeleteDemo(item.id)}
-                              className="p-1.5 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 transition-colors"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Tab 3: Important Info */}
-        {activeTab === "info" && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-sm font-heading font-bold text-slate-900">Manage Announcements/FAQs</h2>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase transition-all cursor-pointer"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add Info Notice</span>
-              </button>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto shadow-premium">
-              <table className="w-full text-left border-collapse text-xs min-w-[500px]">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold uppercase tracking-wider">
-                    <th className="p-3">Notice Title</th>
-                    <th className="p-3">Category</th>
-                    <th className="p-3">Priority</th>
-                    <th className="p-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {notices.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 text-slate-600">
-                      <td className="p-3 font-semibold text-slate-900">{item.title}</td>
-                      <td className="p-3">{item.category}</td>
-                      <td className="p-3 uppercase">
-                        {item.is_important ? (
-                          <span className="text-amber-600 font-bold">Important</span>
-                        ) : (
-                          "Normal"
+            <div className="space-y-2">
+              {demos
+                .filter((d: any) => d.type === "assignment")
+                .map((item: any, idx: number) => (
+                  <div key={item._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                    <div className="space-y-1 max-w-[60%]">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-[#a15c00] bg-[#a15c00]/5 px-1.5 py-0.5 rounded border border-[#a15c00]/10">
+                          {item.subject || "SUB"}
+                        </span>
+                        {item.sub_program && (
+                          <span className="text-[8px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                            {item.sub_program}
+                          </span>
                         )}
-                      </td>
-                      <td className="p-3 text-right">
-                        <button
-                          onClick={() => handleDeleteNotice(item.id)}
-                          className="p-1.5 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 transition-colors"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                      <h4 className="text-xs font-extrabold text-slate-900">{item.title}</h4>
+                      <p className="text-[9px] text-slate-400 font-bold">
+                        ₹{item.price_handwritten || 350} (H) &bull; ₹{item.price_pdf || 120} (PDF)
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      {/* Move Up */}
+                      <button
+                        onClick={() => handleMove(idx, "up")}
+                        disabled={idx === 0}
+                        className="p-1 rounded bg-slate-50 border border-slate-200 disabled:opacity-30"
+                      >
+                        <ChevronUp className="h-3 w-3" />
+                      </button>
+                      {/* Move Down */}
+                      <button
+                        onClick={() => handleMove(idx, "down")}
+                        disabled={idx === demos.filter((d: any) => d.type === "assignment").length - 1}
+                        className="p-1 rounded bg-slate-50 border border-slate-200 disabled:opacity-30"
+                      >
+                        <ChevronDown className="h-3 w-3" />
+                      </button>
+                      {/* Edit */}
+                      <button
+                        onClick={() => handleEditClick(item)}
+                        className="p-1.5 rounded bg-blue-50 border border-blue-100 text-blue-650 hover:bg-blue-100"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </button>
+                      {/* Delete */}
+                      <button
+                        onClick={() => {
+                          if (confirm("Delete this subject?")) deleteDemo({ id: item._id });
+                        }}
+                        className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600 hover:bg-red-100"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         )}
 
-        {/* Tab 4: Reviews list */}
-        {activeTab === "reviews" && (
-          <div className="space-y-4">
+        {/* Projects Tab */}
+        {activeTab === "projects" && (
+          <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <h2 className="text-sm font-heading font-bold text-slate-900">Student Testimonials</h2>
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">College Coding Projects</h2>
+              <button
+                onClick={() => handleAddClick("project")}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#a15c00] text-white text-[10px] font-bold uppercase cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add project</span>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {demos
+                .filter((d: any) => d.type === "project")
+                .map((item: any) => (
+                  <div key={item._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                    <div>
+                      <span className="text-[8px] font-extrabold uppercase bg-sky-50 text-sky-600 px-2 py-0.5 rounded">
+                        {item.category || "Project"}
+                      </span>
+                      <h4 className="text-xs font-extrabold text-slate-900 mt-1">{item.title}</h4>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleEditClick(item)}
+                        className="p-1.5 rounded bg-blue-50 border border-blue-100 text-blue-650 hover:bg-blue-100"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm("Delete this project?")) deleteDemo({ id: item._id });
+                        }}
+                        className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600 hover:bg-red-100"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Videos Tab */}
+        {activeTab === "videos" && (
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Walkthrough Videos</h2>
+              <button
+                onClick={() => handleAddClick("video")}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#a15c00] text-white text-[10px] font-bold uppercase cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add video guide</span>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {demos
+                .filter((d: any) => d.type === "video")
+                .map((item: any) => (
+                  <div key={item._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                    <div>
+                      <h4 className="text-xs font-extrabold text-slate-900">{item.title}</h4>
+                      <p className="text-[8px] text-slate-400 font-bold truncate max-w-[180px]">{item.youtube_url || item.video_reel_url}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleEditClick(item)}
+                        className="p-1.5 rounded bg-blue-50 border border-blue-100 text-blue-650 hover:bg-blue-100"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm("Delete this video guide?")) deleteDemo({ id: item._id });
+                        }}
+                        className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600 hover:bg-red-100"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Notices Tab */}
+        {activeTab === "notices" && (
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Notice Bulletin & FAQs</h2>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase transition-all cursor-pointer"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#a15c00] text-white text-[10px] font-bold uppercase cursor-pointer"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add Notice</span>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {notices.map((item: any) => (
+                <div key={item._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-[8px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">
+                      {item.category}
+                    </span>
+                    <h4 className="text-xs font-extrabold text-slate-900">{item.title}</h4>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirm("Delete notice?")) deleteNotice({ id: item._id });
+                    }}
+                    className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Reviews Tab */}
+        {activeTab === "reviews" && (
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Reviews</h2>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#a15c00] text-white text-[10px] font-bold uppercase cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
                 <span>Add Review</span>
               </button>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto shadow-premium">
-              <table className="w-full text-left border-collapse text-xs min-w-[500px]">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold uppercase tracking-wider">
-                    <th className="p-3">Student Name</th>
-                    <th className="p-3">University</th>
-                    <th className="p-3">Rating</th>
-                    <th className="p-3">Review</th>
-                    <th className="p-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {reviews.map((rev) => (
-                    <tr key={rev.id} className="hover:bg-slate-50 text-slate-600">
-                      <td className="p-3 font-semibold text-slate-900">{rev.student_name}</td>
-                      <td className="p-3">{rev.university}</td>
-                      <td className="p-3 font-semibold text-amber-500">{rev.rating}★</td>
-                      <td className="p-3 max-w-xs truncate">{rev.review_text}</td>
-                      <td className="p-3 text-right">
-                        <button
-                          onClick={() => handleDeleteReview(rev.id)}
-                          className="p-1.5 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 transition-colors"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-2">
+              {reviews.map((rev: any) => (
+                <div key={rev._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-slate-900">{rev.student_name} ({rev.rating}★)</h4>
+                    <p className="text-[10px] text-slate-500 italic max-w-xs truncate">"{rev.review_text}"</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirm("Delete review?")) deleteReview({ id: rev._id });
+                    }}
+                    className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Tab 5: Settings Page */}
-        {activeTab === "settings" && (
-          <form onSubmit={handleSaveSettings} className="space-y-4 max-w-lg p-5 rounded-2xl border border-slate-200 bg-white shadow-premium">
-            <h2 className="text-sm font-heading font-bold text-slate-900">General Site Configurations</h2>
-
-            {/* Customizer */}
-            <div className="space-y-3 pt-1">
-              <h3 className="text-[10px] font-bold text-slate-800 uppercase tracking-wide">Homepage customizer</h3>
-              <div className="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200/60">
+        {/* Comments Tab */}
+        {activeTab === "comments" && (
+          <div className="space-y-4">
+            {/* Add Comment Section */}
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!commentDemoId || !commentText.trim()) {
+                  alert("Please select a subject and enter comment text.");
+                  return;
+                }
+                try {
+                  await addComment({
+                    demo_id: commentDemoId as any,
+                    name: commentName.trim() || "Admin",
+                    text: commentText.trim(),
+                  });
+                  setCommentName("");
+                  setCommentText("");
+                  alert("Comment added successfully!");
+                } catch (err: any) {
+                  alert("Failed to add comment: " + err.message);
+                }
+              }}
+              className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3"
+            >
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Add Comment on Subject</h3>
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[9px] text-slate-500 font-medium">Hero Heading Title</label>
+                  <label className="text-[9px] text-slate-500 font-bold uppercase block">Select Subject</label>
+                  <select
+                    value={commentDemoId}
+                    onChange={(e) => setCommentDemoId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none"
+                  >
+                    <option value="">-- Choose Subject --</option>
+                    {demos.map((d: any) => (
+                      <option key={d._id} value={d._id}>
+                        {d.subject || "SUB"} - {d.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] text-slate-500 font-bold uppercase block">Name</label>
                   <input
                     type="text"
-                    value={homepageConfig.hero_title}
-                    onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_title: e.target.value })}
-                    className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] text-slate-500 font-medium">Hero Subtitle</label>
-                  <textarea
-                    value={homepageConfig.hero_subtitle}
-                    onChange={(e) => setHomepageConfig({ ...homepageConfig, hero_subtitle: e.target.value })}
-                    rows={2}
-                    className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 resize-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] text-slate-500 font-medium">Logo Branding Text</label>
-                  <input
-                    type="text"
-                    value={homepageConfig.logo_text || ""}
-                    onChange={(e) => setHomepageConfig({ ...homepageConfig, logo_text: e.target.value })}
-                    className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-505 font-medium leading-tight">Assignments Tab Label</label>
-                    <input
-                      type="text"
-                      value={homepageConfig.assignments_tab_label || ""}
-                      onChange={(e) => setHomepageConfig({ ...homepageConfig, assignments_tab_label: e.target.value })}
-                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-505 font-medium leading-tight">Projects Tab Label</label>
-                    <input
-                      type="text"
-                      value={homepageConfig.projects_tab_label || ""}
-                      onChange={(e) => setHomepageConfig({ ...homepageConfig, projects_tab_label: e.target.value })}
-                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-505 font-medium leading-tight">Videos Tab Label</label>
-                    <input
-                      type="text"
-                      value={homepageConfig.videos_tab_label || ""}
-                      onChange={(e) => setHomepageConfig({ ...homepageConfig, videos_tab_label: e.target.value })}
-                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] text-slate-505 font-medium leading-tight">Paper Formats (comma separated list)</label>
-                  <input
-                    type="text"
-                    value={homepageConfig.paper_formats || ""}
-                    onChange={(e) => setHomepageConfig({ ...homepageConfig, paper_formats: e.target.value })}
-                    className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-550 font-medium leading-tight">Assignment Option Label</label>
-                    <input
-                      type="text"
-                      value={homepageConfig.assignment_item_type_label || ""}
-                      onChange={(e) => setHomepageConfig({ ...homepageConfig, assignment_item_type_label: e.target.value })}
-                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-550 font-medium leading-tight">Project Option Label</label>
-                    <input
-                      type="text"
-                      value={homepageConfig.project_item_type_label || ""}
-                      onChange={(e) => setHomepageConfig({ ...homepageConfig, project_item_type_label: e.target.value })}
-                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-500 font-medium">Brand Theme Color</label>
-                    <select
-                      value={homepageConfig.theme_color}
-                      onChange={(e) => setHomepageConfig({ ...homepageConfig, theme_color: e.target.value })}
-                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-700"
-                    >
-                      <option value="indigo">Indigo (Default)</option>
-                      <option value="violet">Violet Purple</option>
-                      <option value="amber">Amber Gold</option>
-                      <option value="emerald">Emerald Green</option>
-                      <option value="rose">Rose Red</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-2 pt-1">
-                  <label className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Visible Sections</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={homepageConfig.show_assignments !== false}
-                        onChange={(e) => setHomepageConfig({ ...homepageConfig, show_assignments: e.target.checked })}
-                        className="rounded border-slate-300 text-indigo-600"
-                      />
-                      <span>Assignments</span>
-                    </label>
-                    <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={homepageConfig.show_projects !== false}
-                        onChange={(e) => setHomepageConfig({ ...homepageConfig, show_projects: e.target.checked })}
-                        className="rounded border-slate-300 text-indigo-600"
-                      />
-                      <span>Projects</span>
-                    </label>
-                    <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={homepageConfig.show_videos !== false}
-                        onChange={(e) => setHomepageConfig({ ...homepageConfig, show_videos: e.target.checked })}
-                        className="rounded border-slate-300 text-indigo-600"
-                      />
-                      <span>Videos</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Counters */}
-            <div className="space-y-2 pt-3 border-t border-slate-100">
-              <h3 className="text-[10px] font-bold text-slate-800 uppercase tracking-wide">Trust counters</h3>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[9px] text-slate-500 font-medium">Students Served</label>
-                  <input
-                    type="number"
-                    value={counters.students}
-                    onChange={(e) => setCounters({ ...counters, students: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] text-slate-500 font-medium">Assignments Done</label>
-                  <input
-                    type="number"
-                    value={counters.assignments}
-                    onChange={(e) => setCounters({ ...counters, assignments: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] text-slate-500 font-medium">Projects Done</label>
-                  <input
-                    type="number"
-                    value={counters.projects}
-                    onChange={(e) => setCounters({ ...counters, projects: parseInt(e.target.value) || 0 })}
-                    className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                    placeholder="Admin / Student Name"
+                    value={commentName}
+                    onChange={(e) => setCommentName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none"
                   />
                 </div>
               </div>
-            </div>
+              <div className="space-y-1">
+                <label className="text-[9px] text-slate-500 font-bold uppercase block">Comment Message</label>
+                <input
+                  type="text"
+                  placeholder="Write message..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2.5 rounded-xl bg-[#a15c00] hover:bg-[#854b00] text-white text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
+              >
+                Add Comment
+              </button>
+            </form>
 
-            {/* WhatsApp */}
-            <div className="space-y-2 pt-3 border-t border-slate-100">
-              <h3 className="text-[10px] font-bold text-slate-800 uppercase tracking-wide">WhatsApp Contact</h3>
+            {/* Comments List */}
+            <div className="space-y-3">
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Manage Comments</h2>
               <div className="space-y-2">
-                <div className="space-y-1">
-                  <label className="text-[9px] text-slate-500 font-medium">WhatsApp Phone (format: 91XXXXXXXXXX)</label>
-                  <input
-                    type="text"
-                    value={whatsapp.phone}
-                    onChange={(e) => setWhatsapp({ ...whatsapp, phone: e.target.value })}
-                    className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                  />
+                {commentsList.map((c: any) => {
+                  const matchedDemo = demos.find((d: any) => d._id === c.demo_id);
+                  return (
+                    <div key={c._id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-extrabold text-slate-900">{c.name}</span>
+                          <span className="text-[8px] text-slate-400 font-bold bg-slate-100 px-1.5 py-0.5 rounded uppercase">
+                            {matchedDemo ? matchedDemo.subject : "Demo Reel"}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">{c.text}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={async () => {
+                            try {
+                              await togglePublishComment({ id: c._id });
+                            } catch (err: any) {
+                              alert("Failed to toggle visibility: " + err.message);
+                            }
+                          }}
+                          className={`p-1.5 rounded border transition-colors ${
+                            c.published
+                              ? "bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100"
+                              : "bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-100"
+                          }`}
+                          title={c.published ? "Hide Comment" : "Publish Comment"}
+                        >
+                          {c.published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (confirm("Delete comment permanently?")) {
+                              try {
+                                await deleteComment({ id: c._id });
+                              } catch (err: any) {
+                                alert("Failed to delete comment: " + err.message);
+                              }
+                            }
+                          }}
+                          className="p-1.5 rounded bg-red-50 border border-red-100 text-red-600 hover:bg-red-100 transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {commentsList.length === 0 && (
+                  <div className="text-center py-8 text-slate-400 text-xs">
+                    No comments found in database.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === "analytics" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Clicks Analytics Dashboard</h2>
+              <div className="flex bg-slate-200/80 p-0.5 rounded-lg border border-slate-200 gap-1 text-[9px] font-bold uppercase select-none">
+                <button
+                  onClick={() => setAnalyticsSort("views")}
+                  className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
+                    analyticsSort === "views" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500"
+                  }`}
+                >
+                  Views
+                </button>
+                <button
+                  onClick={() => setAnalyticsSort("orders")}
+                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                    analyticsSort === "orders" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500"
+                  }`}
+                >
+                  Orders
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-100">
+              {sortedAnalytics.map((item: any, idx: number) => (
+                <div key={item._id} className="p-4 flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <span className="text-[8px] font-bold text-slate-400 tracking-wider">#{idx + 1} &bull; {item.subject}</span>
+                    <h4 className="text-xs font-extrabold text-slate-900 leading-tight">{item.title}</h4>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="text-center p-2 px-3.5 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700">
+                      <span className="block text-[14px] font-extrabold leading-none">{item.click_count_view_pdf || 0}</span>
+                      <span className="text-[7px] font-bold uppercase tracking-wider opacity-80 leading-none">Views</span>
+                    </div>
+
+                    <div className="text-center p-2 px-3.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700">
+                      <span className="block text-[14px] font-extrabold leading-none">{item.click_count_order || 0}</span>
+                      <span className="text-[7px] font-bold uppercase tracking-wider opacity-80 leading-none">Orders</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] text-slate-500 font-medium">Default Pre-filled Message</label>
-                  <textarea
-                    value={whatsapp.message}
-                    onChange={(e) => setWhatsapp({ ...whatsapp, message: e.target.value })}
-                    rows={2}
-                    className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none"
-                  />
+              ))}
+
+              {sortedAnalytics.length === 0 && (
+                <div className="text-center py-12 text-slate-400 text-xs flex flex-col items-center gap-1">
+                  <BarChart2 className="h-6 w-6 text-slate-350" />
+                  <span>No click analytics data captured yet.</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Settings Tab */}
+        {activeTab === "settings" && (
+          <form onSubmit={handleSaveSettings} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Site Parameters Configuration</h2>
+
+            {/* Config inputs */}
+            <div className="space-y-3.5">
+              {/* WhatsApp Config */}
+              <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200/50">
+                <h4 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">WhatsApp Config</h4>
+                <div className="space-y-2.5">
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-bold uppercase leading-none">Phone (e.g. 919352483446)</label>
+                    <input
+                      type="text"
+                      value={whatsapp.phone}
+                      onChange={(e) => setWhatsapp({ ...whatsapp, phone: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-bold uppercase leading-none">Pre-filled Msg</label>
+                    <textarea
+                      value={whatsapp.message}
+                      onChange={(e) => setWhatsapp({ ...whatsapp, message: e.target.value })}
+                      rows={2}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Counters */}
+              <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200/50">
+                <h4 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Trust Counters</h4>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-medium">Students</label>
+                    <input
+                      type="number"
+                      value={counters.students}
+                      onChange={(e) => setCounters({ ...counters, students: parseInt(e.target.value) || 0 })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-medium">Assignments</label>
+                    <input
+                      type="number"
+                      value={counters.assignments}
+                      onChange={(e) => setCounters({ ...counters, assignments: parseInt(e.target.value) || 0 })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-medium">Projects</label>
+                    <input
+                      type="number"
+                      value={counters.projects}
+                      onChange={(e) => setCounters({ ...counters, projects: parseInt(e.target.value) || 0 })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Homepage Layout */}
+              <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200/50">
+                <h4 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Logo Branding</h4>
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    <label className="text-[9px] text-slate-500 font-medium">Logo Title</label>
+                    <input
+                      type="text"
+                      value={homepageConfig.logo_text}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, logo_text: e.target.value })}
+                      className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -884,66 +1062,45 @@ export default function AdminDashboardPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-2.5 mt-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase flex items-center justify-center gap-1.5 disabled:opacity-50 transition-colors cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-[#a15c00] hover:bg-[#854b00] text-white text-xs font-bold uppercase transition-colors flex items-center justify-center gap-1"
             >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Saving settings...</span>
-                </>
-              ) : (
-                <span>Save Configuration</span>
-              )}
+              {submitting && <Loader2 className="h-4.5 w-4.5 animate-spin" />}
+              <span>Save Configuration</span>
             </button>
           </form>
         )}
       </div>
 
-      {/* 🖥️ Modals Forms */}
+      {/* 📁 Modal Forms */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-sm">
-          <div className="relative w-full max-w-md max-h-[85vh] rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden flex flex-col justify-between">
+          <div className="relative w-full max-w-sm max-h-[80vh] rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden flex flex-col justify-between">
             {/* Header */}
             <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-slate-50">
-              <h3 className="text-xs sm:text-sm font-heading font-bold text-slate-900">
-                {activeTab === "reviews"
-                  ? "Add Review"
-                  : activeTab === "info"
-                  ? "Add Information Notice"
-                  : `Add Showcase ${formType}`}
+              <h3 className="text-xs sm:text-sm font-heading font-extrabold text-slate-900">
+                {editingId 
+                  ? "Edit Subject Details" 
+                  : activeTab === "reviews"
+                  ? "Add Student Review"
+                  : activeTab === "notices"
+                  ? "Add notice Bulletin"
+                  : `Add Subject / ${formType}`}
               </h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-100 text-slate-500"
-              >
+              <button onClick={() => setIsModalOpen(false)} className="p-1 rounded hover:bg-slate-100">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Form scroll container */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
+            {/* Forms Container */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {activeTab === "assignments" || activeTab === "projects" || activeTab === "videos" ? (
-                <form id="demo-form" onSubmit={handleAddDemo} className="space-y-3">
-                  {activeTab !== "videos" && (
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-slate-700 font-bold uppercase">Item Type</label>
-                      <select
-                        value={formType}
-                        onChange={(e) => setFormType(e.target.value as any)}
-                        className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                      >
-                        <option value="assignment">{homepageConfig.assignment_item_type_label || "Assignment File"}</option>
-                        <option value="project">{homepageConfig.project_item_type_label || "College Coding Project"}</option>
-                      </select>
-                    </div>
-                  )}
-
+                <form id="demo-form" onSubmit={handleAddDemo} className="space-y-3.5">
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Title</label>
+                    <label className="text-[9px] text-slate-700 font-bold uppercase">Subject Title</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. DECE-01 handwritten assignment"
+                      placeholder="e.g. Child Development"
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
                       className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
@@ -951,82 +1108,199 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Category</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. DECE Diploma, BCA Science"
-                      value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value)}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                    <label className="text-[9px] text-slate-700 font-bold uppercase">Description</label>
+                    <textarea
+                      placeholder="Enter subject guidelines description..."
+                      value={formDesc}
+                      onChange={(e) => setFormDesc(e.target.value)}
+                      rows={2}
+                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none"
                     />
                   </div>
 
-                  {formType === "assignment" && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500">Subject</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Nutrition"
-                          value={formSubject}
-                          onChange={(e) => setFormSubject(e.target.value)}
-                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500">Semester</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Sem 1"
-                          value={formSemester}
-                          onChange={(e) => setFormSemester(e.target.value)}
-                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500">Paper Format</label>
-                        <select
-                          value={formFormat}
-                          onChange={(e) => setFormFormat(e.target.value)}
-                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                        >
-                          {(homepageConfig.paper_formats || "Handwritten sheets, Softcopy PDF, Computer Typed")
-                            .split(",")
-                            .map((s: string) => s.trim())
-                            .filter(Boolean)
-                            .map((fmt: string) => (
-                              <option key={fmt} value={fmt}>{fmt}</option>
-                            ))
-                          }
-                        </select>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500">University</label>
-                        <input
-                          type="text"
-                          value={formUniversity}
-                          onChange={(e) => setFormUniversity(e.target.value)}
-                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                        />
-                      </div>
+                  {/* Course Category Selector */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[9px] text-slate-500 font-bold uppercase leading-none">Course Category</label>
+                      <select
+                        value={formCategory}
+                        onChange={(e) => setFormCategory(e.target.value)}
+                        className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700"
+                      >
+                        <option value="dece">DECE</option>
+                        <option value="ma">MA</option>
+                        <option value="ba">BA</option>
+                        <option value="meg">MEG</option>
+                      </select>
                     </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[9px] text-slate-500 font-bold uppercase leading-none">Sub-Program (e.g. MPS)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. MPS"
+                        value={formSubProgram}
+                        onChange={(e) => setFormSubProgram(e.target.value)}
+                        className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  {formType === "assignment" && (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-slate-500">Subject Code</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. DECE-1"
+                            value={formSubject}
+                            onChange={(e) => setFormSubject(e.target.value)}
+                            className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-slate-500">Semester/Year</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Semester 1"
+                            value={formSemester}
+                            onChange={(e) => setFormSemester(e.target.value)}
+                            className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pricing inputs */}
+                      <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200/50">
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-slate-650 font-bold leading-none">Handwritten Price</label>
+                          <input
+                            type="number"
+                            value={formPriceHandwritten}
+                            onChange={(e) => setFormPriceHandwritten(parseInt(e.target.value) || 0)}
+                            className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-slate-650 font-bold leading-none">PDF Softcopy Price</label>
+                          <input
+                            type="number"
+                            value={formPricePdf}
+                            onChange={(e) => setFormPricePdf(parseInt(e.target.value) || 0)}
+                            className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                          />
+                        </div>
+                        <div className="col-span-2 flex items-center gap-2 pt-1 border-t border-slate-200/50">
+                          <input
+                            type="checkbox"
+                            id="price-toggle"
+                            checked={formShowPricePublic}
+                            onChange={(e) => setFormShowPricePublic(e.target.checked)}
+                            className="rounded border-slate-350 text-[#a15c00]"
+                          />
+                          <label htmlFor="price-toggle" className="text-[9px] text-slate-700 cursor-pointer flex items-center gap-1 font-bold">
+                            {formShowPricePublic ? <Eye className="h-3.5 w-3.5 text-[#a15c00]" /> : <EyeOff className="h-3.5 w-3.5 text-slate-400" />}
+                            <span>Show pricing on public site</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Video Walkthrough url & uploader */}
+                      <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200/50">
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-slate-700 font-bold uppercase block">Video Reel Link (YouTube / MP4 URL)</label>
+                          <input
+                            type="text"
+                            placeholder="Direct vertical video .mp4 or YouTube link"
+                            value={formVideoReelUrl}
+                            onChange={(e) => setFormVideoReelUrl(e.target.value)}
+                            className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] text-slate-400 font-bold uppercase">Or</span>
+                          <label className="px-2.5 py-1 rounded-lg border border-slate-200 text-[9px] text-slate-650 bg-white hover:bg-slate-100 cursor-pointer font-bold inline-block">
+                            <span>Upload Video File (.mp4)</span>
+                            <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
+                          </label>
+                          {videoUploading && <span className="text-[8px] text-[#a15c00] animate-pulse">Uploading...</span>}
+                        </div>
+                      </div>
+
+                      {/* Handwritten Sample PDF Preview */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-700 font-bold uppercase block">Handwritten Sample PDF (Preview pages)</label>
+                        <div className="p-2.5 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center relative">
+                          <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
+                            <Upload className="h-4 w-4 text-[#a15c00] inline mr-1" />
+                            <span>Upload Handwritten PDF</span>
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              onChange={(e) => handlePreviewPdfUpload(e, "handwritten")}
+                              className="hidden"
+                            />
+                          </label>
+                          {extractingType === "handwritten" && (
+                            <div className="text-[8px] font-bold text-[#a15c00] mt-1 flex items-center justify-center gap-1">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              <span>Converting pages...</span>
+                            </div>
+                          )}
+                          {handwrittenPagesPreview.length > 0 && (
+                            <div className="text-[8px] text-green-600 font-bold mt-1">
+                              ✓ Auto-loaded {handwrittenPagesPreview.length} handwritten preview pages
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Soft Copy PDF Preview */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-700 font-bold uppercase block">Softcopy solved PDF (Preview pages)</label>
+                        <div className="p-2.5 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center relative">
+                          <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
+                            <Upload className="h-4 w-4 text-[#a15c00] inline mr-1" />
+                            <span>Upload Softcopy PDF</span>
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              onChange={(e) => handlePreviewPdfUpload(e, "pdf")}
+                              className="hidden"
+                            />
+                          </label>
+                          {extractingType === "pdf" && (
+                            <div className="text-[8px] font-bold text-[#a15c00] mt-1 flex items-center justify-center gap-1">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              <span>Converting pages...</span>
+                            </div>
+                          )}
+                          {pdfPagesPreview.length > 0 && (
+                            <div className="text-[8px] text-green-600 font-bold mt-1">
+                              ✓ Auto-loaded {pdfPagesPreview.length} softcopy preview pages
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
                   )}
 
                   {formType === "project" && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1 col-span-2">
-                        <label className="text-[9px] text-slate-500">Tech Stack (comma separated)</label>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-500 font-bold uppercase">Tech Stack (comma separated)</label>
                         <input
-                          type="text"
-                          placeholder="React, Express, MySQL"
-                          value={formTechStack}
-                          onChange={(e) => setFormTechStack(e.target.value)}
-                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                           type="text"
+                           placeholder="e.g. React, Express, MySQL"
+                           value={formTechStack}
+                           onChange={(e) => setFormTechStack(e.target.value)}
+                           className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500">Live Web Link</label>
+                        <label className="text-[9px] text-slate-500 font-bold uppercase">Live website Link</label>
                         <input
                           type="text"
                           placeholder="https://..."
@@ -1035,132 +1309,48 @@ export default function AdminDashboardPage() {
                           className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500">Walkthrough embed URL</label>
-                        <input
-                          type="text"
-                          placeholder="https://youtube.com/embed/..."
-                          value={formYoutubeUrl}
-                          onChange={(e) => setFormYoutubeUrl(e.target.value)}
-                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                        />
-                      </div>
                     </div>
                   )}
 
-                  {formType === "video" && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1 col-span-2">
-                        <label className="text-[9px] text-slate-700 font-bold uppercase">Video Source Type</label>
-                        <select
-                          value={formVideoSource}
-                          onChange={(e) => setFormVideoSource(e.target.value as any)}
-                          className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                        >
-                          <option value="youtube">YouTube Embed Link</option>
-                          <option value="file">Direct Video / PDF Upload</option>
-                        </select>
-                      </div>
-
-                      {formVideoSource === "youtube" ? (
-                        <div className="space-y-1 col-span-2">
-                          <label className="text-[9px] text-slate-500">YouTube Embed Link</label>
-                          <input
-                            type="text"
-                            placeholder="https://youtube.com/embed/... or https://youtu.be/..."
-                            value={formYoutubeUrl}
-                            onChange={(e) => setFormYoutubeUrl(e.target.value)}
-                            className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                          />
-                        </div>
-                      ) : (
-                        <div className="space-y-1 col-span-2 p-3 rounded-xl border border-dashed border-indigo-200 bg-indigo-50/50 text-center">
-                          <label className="text-[10px] text-indigo-700 font-bold block cursor-pointer">
-                            <Upload className="h-5 w-5 text-indigo-600 mx-auto mb-1" />
-                            <span>Select & Upload Video / PDF File</span>
-                            <span className="block text-[8px] text-indigo-500 font-medium mt-0.5">(.mp4, .webm, .mov, .pdf)</span>
-                            <input
-                              type="file"
-                              accept="video/*,.pdf"
-                              onChange={(e) => handleFileUpload(e, "file")}
-                              className="hidden"
-                            />
-                          </label>
-                          {uploading && <div className="text-[9px] text-indigo-600 font-bold mt-1 flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin animate-infinite" /> Uploading...</div>}
-                          {uploadedFileUrl && (
-                            <div className="mt-1.5 p-1 px-2 bg-emerald-50 rounded border border-emerald-200 text-[8px] text-emerald-600 font-semibold truncate">
-                              Uploaded: {uploadedFileUrl.split("/").pop()}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
+                  {/* Cover Thumbnail */}
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Description</label>
-                    <textarea
-                      placeholder="Details about layouts, parameters..."
-                      value={formDesc}
-                      onChange={(e) => setFormDesc(e.target.value)}
-                      rows={2}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 pt-1">
-                    <div className="p-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center">
-                      <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
-                        <Upload className="h-4 w-4 text-indigo-600 mx-auto mb-0.5" />
-                        <span>Card Image</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileUpload(e, "thumbnail")}
-                          className="hidden"
-                        />
-                      </label>
-                      {uploadedThumbnailUrl && <p className="text-[8px] text-green-600 truncate">{uploadedThumbnailUrl}</p>}
-                    </div>
-
-                    {formType !== "video" && (
-                      <div className="p-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center">
-                        <label className="text-[9px] text-slate-600 font-bold block cursor-pointer">
-                          <Upload className="h-4 w-4 text-indigo-600 mx-auto mb-0.5" />
-                          <span>Sample PDF</span>
-                          <input
-                            type="file"
-                            accept=".pdf,image/*"
-                            onChange={(e) => handleFileUpload(e, "file")}
-                            className="hidden"
-                          />
+                    <label className="text-[9px] text-slate-700 font-bold uppercase block">Subject Cover Image</label>
+                    <div className="flex gap-2 items-center">
+                      {formThumbnailUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={formThumbnailUrl} className="w-12 h-12 object-cover rounded-lg border border-slate-200" alt="Thumbnail" />
+                      )}
+                      <div className="flex-1">
+                        <label className="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] text-slate-600 bg-slate-50 hover:bg-slate-100 cursor-pointer font-bold inline-block">
+                          <span>Upload Cover Image</span>
+                          <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="hidden" />
                         </label>
-                        {uploadedFileUrl && <p className="text-[8px] text-green-600 truncate">{uploadedFileUrl}</p>}
+                        {thumbnailUploading && <span className="text-[8px] text-[#a15c00] ml-2">Uploading...</span>}
                       </div>
-                    )}
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       id="is-featured"
                       checked={formIsFeatured}
                       onChange={(e) => setFormIsFeatured(e.target.checked)}
-                      className="rounded text-indigo-600 border border-slate-200"
+                      className="rounded border-slate-200 text-[#a15c00]"
                     />
-                    <label htmlFor="is-featured" className="text-[9px] text-slate-700 cursor-pointer">
-                      Feature on home page
+                    <label htmlFor="is-featured" className="text-[9px] font-bold text-slate-650 cursor-pointer">
+                      Feature on Home Screen
                     </label>
                   </div>
                 </form>
               ) : activeTab === "reviews" ? (
-                <form id="review-form" onSubmit={handleAddReview} className="space-y-3">
+                <form id="review-form" onSubmit={handleAddReview} className="space-y-3.5">
                   <div className="space-y-1">
                     <label className="text-[9px] text-slate-700 font-bold uppercase">Student Name</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Priya Sharma"
+                      placeholder="e.g. Priyanjali Sen"
                       value={revName}
                       onChange={(e) => setRevName(e.target.value)}
                       className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
@@ -1168,7 +1358,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Rating</label>
+                    <label className="text-[9px] text-slate-700 font-bold uppercase">Rating score</label>
                     <select
                       value={revRating}
                       onChange={(e) => setRevRating(parseInt(e.target.value) || 5)}
@@ -1181,21 +1371,10 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">University / Course</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. IGNOU (DECE)"
-                      value={revUniv}
-                      onChange={(e) => setRevUniv(e.target.value)}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Review Feedback</label>
+                    <label className="text-[9px] text-slate-700 font-bold uppercase">Review feedback</label>
                     <textarea
                       required
-                      placeholder="Review message..."
+                      placeholder="Feedback details..."
                       value={revText}
                       onChange={(e) => setRevText(e.target.value)}
                       rows={3}
@@ -1204,13 +1383,13 @@ export default function AdminDashboardPage() {
                   </div>
                 </form>
               ) : (
-                <form id="info-form" onSubmit={handleAddInfo} className="space-y-3">
+                <form id="info-form" onSubmit={handleAddNotice} className="space-y-3.5">
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Notice/FAQ Title</label>
+                    <label className="text-[9px] text-slate-700 font-bold uppercase">Notice Bulletin Title</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. How to download softcopy?"
+                      placeholder="e.g. Exams scheduled dates"
                       value={infoTitle}
                       onChange={(e) => setInfoTitle(e.target.value)}
                       className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
@@ -1218,40 +1397,27 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Category</label>
-                    <select
-                      value={infoCategory}
-                      onChange={(e) => setInfoCategory(e.target.value)}
-                      className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                    >
-                      <option value="Notice">Notice Announcement</option>
-                      <option value="FAQ">FAQ Question</option>
-                      <option value="Instruction">Instruction Guide</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-slate-700 font-bold uppercase">Content Description</label>
+                    <label className="text-[9px] text-slate-700 font-bold uppercase">Notice content</label>
                     <textarea
                       required
-                      placeholder="Announcement detailed details..."
+                      placeholder="Notice description details..."
                       value={infoContent}
                       onChange={(e) => setInfoContent(e.target.value)}
-                      rows={4}
+                      rows={3}
                       className="w-full p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none"
                     />
                   </div>
 
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       id="info-important"
                       checked={infoIsImportant}
                       onChange={(e) => setInfoIsImportant(e.target.checked)}
-                      className="rounded text-indigo-600 border border-slate-200"
+                      className="rounded border-slate-200 text-[#a15c00]"
                     />
-                    <label htmlFor="info-important" className="text-[9px] text-slate-700 cursor-pointer">
-                      Mark as Important Notice (Highlights yellow)
+                    <label htmlFor="info-important" className="text-[9px] font-bold text-slate-650 cursor-pointer">
+                      Mark as Important Notice (Yellow highlight banner)
                     </label>
                   </div>
                 </form>
@@ -1263,7 +1429,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
+                className="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase"
               >
                 Cancel
               </button>
@@ -1272,18 +1438,15 @@ export default function AdminDashboardPage() {
                 form={
                   activeTab === "reviews"
                     ? "review-form"
-                    : activeTab === "info"
+                    : activeTab === "notices"
                     ? "info-form"
                     : "demo-form"
                 }
-                disabled={submitting || uploading}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1 disabled:opacity-50 transition-colors cursor-pointer"
+                disabled={submitting || uploading || extractingType !== null || thumbnailUploading}
+                className="px-4.5 py-1.5 rounded-lg bg-[#a15c00] hover:bg-[#854b00] text-white text-[10px] font-bold uppercase flex items-center gap-1 disabled:opacity-50 cursor-pointer"
               >
-                {submitting ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <span>Create Notice</span>
-                )}
+                {submitting && <Loader2 className="h-3 w-3 animate-spin" />}
+                <span>{editingId ? "Update item" : "Create item"}</span>
               </button>
             </div>
           </div>

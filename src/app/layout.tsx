@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
 import { WhatsAppWidget } from "@/components/shared/whatsapp-widget";
+import { ConvexClientProvider } from "@/components/shared/convex-provider";
 
 export const metadata: Metadata = {
   title: "Guru Nanak Photostat Fatehabad - Demo & Assignment Showcase",
@@ -18,18 +19,21 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full scroll-smooth">
       <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 antialiased selection:bg-indigo-600/20 selection:text-indigo-900">
-        {/* Navigation Header */}
-        <Navbar />
+        <ConvexClientProvider>
+          {/* Navigation Header */}
+          <Navbar />
 
-        {/* Main Content Area */}
-        <main className="flex-1 w-full flex flex-col">{children}</main>
+          {/* Main Content Area */}
+          <main className="flex-1 w-full flex flex-col">{children}</main>
 
-        {/* Footer Navigation */}
-        <Footer />
+          {/* Footer Navigation */}
+          <Footer />
 
-        {/* Floating WhatsApp Widget */}
-        <WhatsAppWidget />
+          {/* Floating WhatsApp Widget */}
+          <WhatsAppWidget />
+        </ConvexClientProvider>
       </body>
     </html>
   );
 }
+

@@ -1,102 +1,81 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Search, PlayCircle } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-
-const FALLBACK_VIDEOS: any[] = [];
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function VideosPage() {
-  const [items, setItems] = useState<any[]>(FALLBACK_VIDEOS);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchVideos() {
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from("demos")
-          .select("*")
-          .eq("type", "video")
-          .eq("published", true)
-          .order("sort_order", { ascending: true });
+  // Fetch from Convex
+  const demos = useQuery(api.demos.get) || [];
 
-        if (data && data.length > 0) {
-          setItems(data);
-        }
-      } catch (err) {
-        console.log("Using fallback mock data for videos.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchVideos();
-  }, []);
+  const videos = useMemo(() => {
+    return demos.filter((d: any) => d.type === "video");
+  }, [demos]);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
-    items.forEach((item) => {
+    videos.forEach((item: any) => {
       if (item.category) set.add(item.category);
     });
     return Array.from(set);
-  }, [items]);
+  }, [videos]);
 
   const filteredVideos = useMemo(() => {
-    return items.filter((item) => {
+    return videos.filter((item: any) => {
       const matchSearch = item.title.toLowerCase().includes(search.toLowerCase());
       const matchCategory =
         selectedCategory === "all" || item.category === selectedCategory;
 
       return matchSearch && matchCategory;
     });
-  }, [items, search, selectedCategory]);
+  }, [videos, search, selectedCategory]);
 
   return (
-    <div className="w-full mx-auto max-w-5xl px-4 py-8 space-y-8 bg-bg-page">
+    <div className="w-full mx-auto max-w-xl px-4 py-8 space-y-6 bg-slate-50 min-h-screen pb-24">
       {/* Page Header */}
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-slate-900 tracking-tight">
-          Video <span className="text-gradient">Tutorials</span>
+        <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-slate-900 tracking-tight">
+          Video <span className="text-[#a15c00]">Guides</span>
         </h1>
-        <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto leading-relaxed">
+        <p className="text-[10px] sm:text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
           Watch running demonstrations of our applications and visual speed runs of handwritten assignments.
         </p>
       </div>
 
       {/* Filter Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-white border border-slate-100 shadow-premium">
-        <div className="relative sm:col-span-2">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-text-muted" />
+      <div className="grid grid-cols-1 gap-2 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="relative">
+          <Search className="absolute left-3 top-3.5 h-3.5 w-3.5 text-slate-400" />
           <input
             type="text"
             placeholder="Search demo videos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none"
           />
         </div>
 
-        <div className="relative">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 transition-colors appearance-none cursor-pointer"
-          >
-            <option value="all">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 focus:outline-none appearance-none cursor-pointer"
+        >
+          <option value="all">All Categories</option>
+          {categories.map((cat: any) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredVideos.map((vid) => {
+      <div className="space-y-4">
+        {filteredVideos.map((vid: any) => {
           let embedUrl = vid.youtube_url;
           if (embedUrl && !embedUrl.includes("/embed/")) {
             try {
@@ -113,28 +92,39 @@ export default function VideosPage() {
             }
           }
 
+          const isDirectFile = vid.file_urls && vid.file_urls.length > 0;
+
           return (
             <div
-              key={vid.id}
-              className="rounded-2xl bg-white border border-slate-100 shadow-premium overflow-hidden space-y-3 pb-4 hover:shadow-lg transition-all duration-200"
+              key={vid._id}
+              className="rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden space-y-3 pb-4"
             >
               {/* Aspect Ratio Box */}
               <div className="relative aspect-video bg-black border-b border-slate-200">
-                <iframe
-                  className="w-full h-full"
-                  src={embedUrl || "https://www.youtube.com/embed/dQw4w9WgXcQ"}
-                  title={vid.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
+                {isDirectFile ? (
+                  <video
+                    src={vid.file_urls?.[0]}
+                    controls
+                    poster={vid.thumbnail_url}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <iframe
+                    className="w-full h-full border-0"
+                    src={embedUrl || "https://www.youtube.com/embed/dQw4w9WgXcQ"}
+                    title={vid.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                )}
               </div>
 
               {/* Info details */}
               <div className="px-5 space-y-2">
-                <span className="text-[9px] px-2 py-0.5 rounded bg-brand-primary-light text-brand-primary font-bold border border-brand-primary-light">
-                  {vid.category || "Video Demo"}
+                <span className="text-[8px] px-2 py-0.5 rounded bg-amber-500/5 text-[#a15c00] font-bold border border-amber-550/10">
+                  {vid.category || "Video Guide"}
                 </span>
-                <h3 className="text-xs sm:text-sm font-heading font-bold text-slate-900 pt-1 leading-snug">
+                <h3 className="text-xs font-heading font-bold text-slate-900 pt-1 leading-snug">
                   {vid.title}
                 </h3>
               </div>
@@ -145,9 +135,9 @@ export default function VideosPage() {
 
       {/* Empty State */}
       {filteredVideos.length === 0 && (
-        <div className="text-center py-12 space-y-3 rounded-2xl bg-white border border-slate-100 shadow-premium">
-          <PlayCircle className="h-8 w-8 text-text-muted mx-auto animate-pulse" />
-          <p className="text-xs text-text-muted">No demo videos match your current search.</p>
+        <div className="text-center py-16 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-2">
+          <PlayCircle className="h-7 w-7 text-slate-350 mx-auto" />
+          <p className="text-xs text-slate-400">No guides found matching filters.</p>
         </div>
       )}
     </div>
