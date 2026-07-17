@@ -73,6 +73,14 @@ export default function CoursePage() {
   const whatsappConfig = settingsObj.whatsapp_config || {};
   const phone = whatsappConfig.phone || "919352483446";
 
+  const showPdfSetting = settingsObj.homepage_config?.show_pdf !== false;
+
+  useEffect(() => {
+    if (!showPdfSetting && activeFormat === "pdf") {
+      setActiveFormat("handwritten");
+    }
+  }, [showPdfSetting, activeFormat]);
+
   // Filter subjects for this category
   const categorySubjects = useMemo(() => {
     return demos
@@ -243,33 +251,35 @@ I viewed the live demo preview on your site. Please confirm availability.`;
       </div>
 
       {/* 2. Format Selector Tabs (Handwritten vs PDF) */}
-      <div className="grid grid-cols-2 p-1.5 bg-slate-200/60 rounded-2xl border border-slate-200 gap-1.5">
-        <button
-          onClick={() => handleFormatChange("handwritten")}
-          className={`py-3 rounded-xl text-[10px] sm:text-xs font-extrabold uppercase tracking-wider transition-all flex flex-col items-center justify-center cursor-pointer ${
-            activeFormat === "handwritten"
-              ? "bg-[#a15c00] text-white shadow-md scale-[1.02]"
-              : "text-slate-650 hover:bg-white/50"
-          }`}
-        >
-          <span className="text-sm">✍️</span>
-          <span className="mt-0.5">Handwritten</span>
-          <span className="text-[7px] opacity-75 font-normal tracking-normal lowercase">bne-bnaye hard copy</span>
-        </button>
+      {showPdfSetting && (
+        <div className="grid grid-cols-2 p-1.5 bg-slate-200/60 rounded-2xl border border-slate-200 gap-1.5">
+          <button
+            onClick={() => handleFormatChange("handwritten")}
+            className={`py-3 rounded-xl text-[10px] sm:text-xs font-extrabold uppercase tracking-wider transition-all flex flex-col items-center justify-center cursor-pointer ${
+              activeFormat === "handwritten"
+                ? "bg-[#a15c00] text-white shadow-md scale-[1.02]"
+                : "text-slate-650 hover:bg-white/50"
+            }`}
+          >
+            <span className="text-sm">✍️</span>
+            <span className="mt-0.5">Handwritten</span>
+            <span className="text-[7px] opacity-75 font-normal tracking-normal lowercase">bne-bnaye hard copy</span>
+          </button>
 
-        <button
-          onClick={() => handleFormatChange("pdf")}
-          className={`py-3 rounded-xl text-[10px] sm:text-xs font-extrabold uppercase tracking-wider transition-all flex flex-col items-center justify-center cursor-pointer ${
-            activeFormat === "pdf"
-              ? "bg-[#a15c00] text-white shadow-md scale-[1.02]"
-              : "text-slate-650 hover:bg-white/50"
-          }`}
-        >
-          <span className="text-sm">📄</span>
-          <span className="mt-0.5">Soft Copy PDF</span>
-          <span className="text-[7px] opacity-75 font-normal tracking-normal lowercase">dekh kar likhne ke liye</span>
-        </button>
-      </div>
+          <button
+            onClick={() => handleFormatChange("pdf")}
+            className={`py-3 rounded-xl text-[10px] sm:text-xs font-extrabold uppercase tracking-wider transition-all flex flex-col items-center justify-center cursor-pointer ${
+              activeFormat === "pdf"
+                ? "bg-[#a15c00] text-white shadow-md scale-[1.02]"
+                : "text-slate-650 hover:bg-white/50"
+            }`}
+          >
+            <span className="text-sm">📄</span>
+            <span className="mt-0.5">Soft Copy PDF</span>
+            <span className="text-[7px] opacity-75 font-normal tracking-normal lowercase">dekh kar likhne ke liye</span>
+          </button>
+        </div>
+      )}
 
       {/* 3. Subject Selector (Cards list) */}
       {categorySubjects.length > 0 && (

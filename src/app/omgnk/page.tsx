@@ -125,6 +125,7 @@ export default function AdminDashboardPage() {
     theme_color: "indigo",
     logo_text: "GNK Demos",
     paper_formats: "Handwritten sheets, Softcopy PDF, Computer Typed",
+    show_pdf: true,
   });
 
   useEffect(() => {
@@ -1030,6 +1031,18 @@ export default function AdminDashboardPage() {
                       onChange={(e) => setHomepageConfig({ ...homepageConfig, paper_formats: e.target.value })}
                       className="w-full p-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-900"
                     />
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-200/50">
+                    <input
+                      type="checkbox"
+                      id="show_pdf_checkbox"
+                      checked={homepageConfig.show_pdf !== false}
+                      onChange={(e) => setHomepageConfig({ ...homepageConfig, show_pdf: e.target.checked })}
+                      className="h-4 w-4 rounded border-slate-350 text-[#a15c00] focus:ring-[#a15c00]"
+                    />
+                    <label htmlFor="show_pdf_checkbox" className="text-xs text-slate-700 font-bold uppercase tracking-wider cursor-pointer">
+                      Enable Soft Copy PDF Section
+                    </label>
                   </div>
                 </div>
               </div>
