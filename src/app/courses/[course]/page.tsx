@@ -22,11 +22,11 @@ const PROGRAM_METADATA: Record<string, { title: string; desc: string }> = {
     desc: "DECE-4 Project Synopsis and Report writing guide walkthroughs.",
   },
   "ma": {
-    title: "MA Solved Assignments",
+    title: "MA Assignments",
     desc: "Master of Arts solved sheets for MPS, MHD, MEG, MAHI and other programs.",
   },
   "ba": {
-    title: "BA Solved Assignments",
+    title: "BA Assignments",
     desc: "Bachelor of Arts general and honors solved assignment sheets.",
   },
 };
