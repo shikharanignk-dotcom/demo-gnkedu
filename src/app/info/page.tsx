@@ -21,7 +21,7 @@ export default function InfoPage() {
   }, [siteSettings]);
 
   const whatsappConfig = settingsObj.whatsapp_config || {};
-  const phone = whatsappConfig.phone || "919352483446";
+  const phone = whatsappConfig.phone || "919518877939";
 
   return (
     <div className="w-full mx-auto max-w-xl px-4 py-8 space-y-6 bg-slate-50 min-h-screen pb-24">

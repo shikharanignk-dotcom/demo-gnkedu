@@ -71,7 +71,7 @@ export default function CoursePage() {
   }, [siteSettings]);
 
   const whatsappConfig = settingsObj.whatsapp_config || {};
-  const phone = whatsappConfig.phone || "919352483446";
+  const phone = whatsappConfig.phone || "919518877939";
 
   const showPdfSetting = settingsObj.homepage_config?.show_pdf !== false;
 

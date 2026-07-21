@@ -81,7 +81,7 @@ INSERT INTO site_settings (key, value) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO site_settings (key, value) VALUES
-('whatsapp_config', '{"phone": "919352483446", "message": "Hello Guru Nanak Photostat, I want to inquire about assignments/projects."}')
+('whatsapp_config', '{"phone": "919518877939", "message": "Hello Guru Nanak Photostat, I want to inquire about assignments/projects."}')
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO site_settings (key, value) VALUES

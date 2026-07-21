@@ -25,7 +25,7 @@ export default function AssignmentsPage() {
   }, [siteSettings]);
 
   const whatsappConfig = settingsObj.whatsapp_config || {};
-  const phone = whatsappConfig.phone || "919352483446";
+  const phone = whatsappConfig.phone || "919518877939";
 
   const assignments = useMemo(() => {
     return demos.filter((d: any) => d.type === "assignment");

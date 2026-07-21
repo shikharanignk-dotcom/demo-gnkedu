@@ -22,7 +22,7 @@ export function Footer() {
   const homepageConfig = settingsObj.homepage_config || {};
 
   const logoText = homepageConfig.logo_text || "GNK Demos";
-  const phone = whatsappConfig.phone || "919352483446";
+  const phone = whatsappConfig.phone || "919518877939";
 
   const displayPhone = phone.startsWith("91") && phone.length === 12 
     ? `+91 ${phone.slice(2, 7)} ${phone.slice(7)}` 

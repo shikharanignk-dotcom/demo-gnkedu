@@ -118,7 +118,7 @@ export default function AdminDashboardPage() {
   }, [siteSettings]);
 
   const [counters, setCounters] = useState({ students: 500, assignments: 1000, projects: 50 });
-  const [whatsapp, setWhatsapp] = useState({ phone: "919352483446", message: "" });
+  const [whatsapp, setWhatsapp] = useState({ phone: "919518877939", message: "" });
   const [homepageConfig, setHomepageConfig] = useState({
     hero_title: "Guru Nanak Photostat Fatehabad",
     hero_subtitle: "Verify Assignment Sheet Quality Before You Order.",
@@ -938,7 +938,7 @@ export default function AdminDashboardPage() {
                 <h4 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">WhatsApp Config</h4>
                 <div className="space-y-2.5">
                   <div className="space-y-1">
-                    <label className="text-[9px] text-slate-500 font-bold uppercase leading-none">Phone (e.g. 919352483446)</label>
+                    <label className="text-[9px] text-slate-500 font-bold uppercase leading-none">Phone (e.g. 919518877939)</label>
                     <input
                       type="text"
                       value={whatsapp.phone}

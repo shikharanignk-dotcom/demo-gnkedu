@@ -18,7 +18,7 @@ export function WhatsAppWidget() {
   }, [siteSettings]);
 
   const whatsappConfig = settingsObj.whatsapp_config || {};
-  let phone = whatsappConfig.phone || "919352483446";
+  let phone = whatsappConfig.phone || "919518877939";
   if (phone.length === 10 && !phone.startsWith("91")) {
     phone = "91" + phone;
   }

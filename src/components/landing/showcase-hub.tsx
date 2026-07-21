@@ -47,7 +47,7 @@ export function ShowcaseHub({ initialDemos, initialReviews, initialNotices, sett
   const [zoom, setZoom] = useState(100);
 
   const themeColor = settings.theme_color || "indigo";
-  const whatsappPhone = settings.whatsapp_number || "919352483446";
+  const whatsappPhone = settings.whatsapp_number || "919518877939";
   const whatsappMsg = settings.whatsapp_message || "Hello Guru Nanak Photostat, I want to inquire about assignments/projects.";
 
   const paperFormats = useMemo(() => {

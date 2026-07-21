@@ -60,7 +60,7 @@ export default function HomePage() {
   const homepageConfig = settingsObj.homepage_config || {};
   const whatsappConfig = settingsObj.whatsapp_config || {};
 
-  const phone = whatsappConfig.phone || "919352483446";
+  const phone = whatsappConfig.phone || "919518877939";
   const whatsappMsg = whatsappConfig.message || "Hello Guru Nanak Photostat, I want to inquire about assignments/projects.";
 
   return (

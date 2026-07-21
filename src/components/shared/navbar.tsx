@@ -37,7 +37,7 @@ export function Navbar() {
   const homepageConfig = settingsObj.homepage_config || {};
 
   const logoText = homepageConfig.logo_text || "GNK Demos";
-  let phone = whatsappConfig.phone || "919352483446";
+  let phone = whatsappConfig.phone || "919518877939";
   if (phone.length === 10 && !phone.startsWith("91")) {
     phone = "91" + phone;
   }
