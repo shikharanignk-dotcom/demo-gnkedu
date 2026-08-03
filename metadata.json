@@ -1,0 +1,6 @@
+{
+  "name": "Guru Nanak Photostat",
+  "description": "India's trusted IGNOU Assignment & Project Service. Handwritten assignments, project files, PDFs, notes, and guess papers with WhatsApp support and fast delivery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
