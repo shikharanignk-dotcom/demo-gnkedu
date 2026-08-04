@@ -133,28 +133,17 @@ export const DeceShowcaseSection: React.FC<DeceShowcaseSectionProps> = ({ onWhat
 
             {/* Price & Action Buttons */}
             <div className="pt-3 border-t border-slate-200">
-              <div className="flex items-center justify-between gap-2 mb-3">
-                {/* Left Price Column */}
-                <div>
-                  <span className="text-[11px] text-slate-400 line-through font-bold block">₹1200 Original Price</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-xl sm:text-3xl font-black text-[#0A66C2] whitespace-nowrap">
-                      ₹1000
-                    </span>
-                    <span className="bg-red-100 text-red-700 border border-red-200 px-1.5 py-0.5 rounded-md font-extrabold text-[10px] sm:text-xs whitespace-nowrap flex items-center gap-0.5">
-                      🔥 17% OFF
-                    </span>
+              <div className="mb-3">
+                <div className="bg-blue-50/90 border border-blue-200/90 rounded-xl p-3 flex justify-between items-center w-full">
+                  <div className="text-left">
+                    <span className="bg-[#0A66C2] text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded uppercase font-black tracking-wider block w-max">BOOKING</span>
+                    <span className="text-sm sm:text-base font-black text-slate-900 mt-1 block">₹300 Advance</span>
                   </div>
-                </div>
-
-                {/* Booking & COD Badge Box (Without Advance word) */}
-                <div className="bg-blue-50/90 border border-blue-200/90 rounded-xl px-2.5 py-2 text-right shrink-0">
-                  <div className="flex items-center justify-end gap-1.5 font-black text-blue-900 text-xs sm:text-sm">
-                    <span className="bg-[#0A66C2] text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded uppercase font-black tracking-wider">BOOKING</span>
-                    <span className="text-sm sm:text-base font-black text-slate-900">₹300</span>
-                  </div>
-                  <div className="text-[10.5px] sm:text-xs font-extrabold text-slate-700 mt-1 flex items-center justify-end gap-1">
-                    <span>📦</span> ₹700 Cash on Delivery
+                  <div className="text-right">
+                    <span className="text-[10.5px] sm:text-xs font-black text-slate-700 flex items-center justify-end gap-1">
+                      <span>📦</span> ₹700 Cash on Delivery
+                    </span>
+                    <span className="text-[8.5px] text-slate-400 block mt-0.5">Pay remaining at doorstep</span>
                   </div>
                 </div>
               </div>
@@ -247,28 +236,17 @@ export const DeceShowcaseSection: React.FC<DeceShowcaseSectionProps> = ({ onWhat
 
             {/* Price & Action Buttons */}
             <div className="pt-3 border-t border-slate-200">
-              <div className="flex items-center justify-between gap-2 mb-3">
-                {/* Left Price Column */}
-                <div>
-                  <span className="text-[11px] text-slate-400 line-through font-bold block">₹2500 Original Price</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-xl sm:text-3xl font-black text-amber-600 whitespace-nowrap">
-                      ₹2000
-                    </span>
-                    <span className="bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 rounded-md font-extrabold text-[10px] sm:text-xs whitespace-nowrap flex items-center gap-0.5">
-                      🔥 20% OFF
-                    </span>
+              <div className="mb-3">
+                <div className="bg-amber-50/90 border border-amber-200/90 rounded-xl p-3 flex justify-between items-center w-full">
+                  <div className="text-left">
+                    <span className="bg-amber-600 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded uppercase font-black tracking-wider block w-max">BOOKING</span>
+                    <span className="text-sm sm:text-base font-black text-slate-900 mt-1 block">₹300 Advance</span>
                   </div>
-                </div>
-
-                {/* Booking & COD Badge Box (Without Advance word) */}
-                <div className="bg-amber-50/90 border border-amber-200/90 rounded-xl px-2.5 py-2 text-right shrink-0">
-                  <div className="flex items-center justify-end gap-1.5 font-black text-amber-900 text-xs sm:text-sm">
-                    <span className="bg-amber-600 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded uppercase font-black tracking-wider">BOOKING</span>
-                    <span className="text-sm sm:text-base font-black text-slate-900">₹300</span>
-                  </div>
-                  <div className="text-[10.5px] sm:text-xs font-extrabold text-slate-700 mt-1 flex items-center justify-end gap-1">
-                    <span>📦</span> ₹1700 Cash on Delivery
+                  <div className="text-right">
+                    <span className="text-[10.5px] sm:text-xs font-black text-slate-700 flex items-center justify-end gap-1">
+                      <span>📦</span> ₹1700 Cash on Delivery
+                    </span>
+                    <span className="text-[8.5px] text-slate-500 block mt-0.5">Pay remaining at doorstep</span>
                   </div>
                 </div>
               </div>

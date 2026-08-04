@@ -270,21 +270,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onWhatsAppClick, onSea
               {/* Price & Immediate Order Action */}
               <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <span className="text-[11px] text-slate-500 line-through">
-                    {activeTab === 'dece_proj' ? '₹2500 Original Price' : '₹1200 Original Price'}
-                  </span>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl sm:text-3xl font-black text-slate-900">
-                      {activeTab === 'dece_proj' ? '₹2000' : '₹1000'}
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl sm:text-2xl font-black text-slate-900">
+                      ₹300 Booking
                     </span>
-                    <span className="text-xs text-emerald-600 font-extrabold">
-                      {activeTab === 'dece_proj' ? '🔥 20% OFF' : '🔥 17% OFF'}
+                    <span className="text-[10px] text-slate-500 font-bold">
+                      + Cash on Delivery
                     </span>
                   </div>
-                  <p className="text-[10px] text-slate-600 mt-0.5 font-bold">
+                  <p className="text-[10.5px] text-slate-700 mt-0.5 font-black uppercase tracking-wider">
                     {activeTab === 'dece_proj' 
-                      ? '₹300 Booking • ₹1700 Cash on Delivery'
-                      : '₹300 Booking • ₹700 Cash on Delivery'}
+                      ? '📦 ₹1700 Pay at doorstep'
+                      : '📦 ₹700 Pay at doorstep'}
                   </p>
                 </div>
 
@@ -292,10 +289,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onWhatsAppClick, onSea
                   onClick={() =>
                     onWhatsAppClick(
                       activeTab === 'dece_proj'
-                        ? 'DECE-4 Project File (₹2000 total - ₹300 advance + ₹1700 COD)'
+                        ? 'DECE-4 Project File (₹300 booking advance + ₹1700 COD)'
                         : activeTab === 'dece_hw'
-                        ? 'DECE (DECE 1, 2, 3) Assignment Set (₹1000 total - ₹300 advance + ₹700 COD)'
-                        : 'BEVAE-181 Assignment (₹1000 total)'
+                        ? 'DECE (DECE 1, 2, 3) Assignment Set (₹300 booking advance + ₹700 COD)'
+                        : 'BEVAE-181 Assignment'
                     )
                   }
                   className="bg-[#FF7A00] hover:bg-orange-600 text-white font-black px-4 py-2.5 rounded-xl text-xs shadow-md hover:shadow-orange-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
