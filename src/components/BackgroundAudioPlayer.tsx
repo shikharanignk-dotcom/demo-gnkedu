@@ -141,8 +141,10 @@ export const BackgroundAudioPlayer: React.FC = () => {
   };
 
   useEffect(() => {
-    // Attempt playback immediately
-    unlockAndPlay();
+    // Attempt playback automatically after 2 seconds
+    const autoPlayTimer = setTimeout(() => {
+      unlockAndPlay();
+    }, 2000);
 
     const handleGesture = () => {
       unlockAndPlay();
@@ -155,6 +157,7 @@ export const BackgroundAudioPlayer: React.FC = () => {
     window.addEventListener('keydown', handleGesture);
 
     return () => {
+      clearTimeout(autoPlayTimer);
       clearTimers();
       window.removeEventListener('click', handleGesture);
       window.removeEventListener('touchstart', handleGesture);
