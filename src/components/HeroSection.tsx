@@ -270,18 +270,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onWhatsAppClick, onSea
               {/* Price & Immediate Order Action */}
               <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl sm:text-2xl font-black text-slate-900">
-                      ₹300 Booking
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-bold">
-                      + Cash on Delivery
+                  <span className="bg-emerald-600 text-white text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider inline-block">COD AVAILABLE</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-lg sm:text-xl font-black text-emerald-800">
+                      🚚 Cash on Delivery
                     </span>
                   </div>
-                  <p className="text-[10.5px] text-slate-700 mt-0.5 font-black uppercase tracking-wider">
-                    {activeTab === 'dece_proj' 
-                      ? '📦 ₹1700 Pay at doorstep'
-                      : '📦 ₹700 Pay at doorstep'}
+                  <p className="text-[10px] text-slate-550 mt-0.5 font-bold uppercase tracking-wider">
+                    Order now & pay at your doorstep anywhere in India!
                   </p>
                 </div>
 
@@ -289,9 +285,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onWhatsAppClick, onSea
                   onClick={() =>
                     onWhatsAppClick(
                       activeTab === 'dece_proj'
-                        ? 'DECE-4 Project File (₹300 booking advance + ₹1700 COD)'
+                        ? 'DECE-4 Project File (Cash on Delivery)'
                         : activeTab === 'dece_hw'
-                        ? 'DECE (DECE 1, 2, 3) Assignment Set (₹300 booking advance + ₹700 COD)'
+                        ? 'DECE (DECE 1, 2, 3) Assignment Set (Cash on Delivery)'
                         : 'BEVAE-181 Assignment'
                     )
                   }

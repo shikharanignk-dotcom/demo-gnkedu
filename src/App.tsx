@@ -44,7 +44,7 @@ export function App() {
   const [showOrderTrackingModal, setShowOrderTrackingModal] = useState<boolean>(false);
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
   const [showAiAssistantModal, setShowAiAssistantModal] = useState<boolean>(false);
-  const [showOfferModal, setShowOfferModal] = useState<boolean>(true); // Auto popup on site open
+  const [showOfferModal, setShowOfferModal] = useState<boolean>(false); // Only popup when clicked
   const [pdfModalData, setPdfModalData] = useState<{ title: string; url?: string } | null>(null);
 
   // Increment visitor counter & reset scroll to top on initial load

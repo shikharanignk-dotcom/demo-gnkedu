@@ -134,17 +134,14 @@ export const DeceShowcaseSection: React.FC<DeceShowcaseSectionProps> = ({ onWhat
             {/* Price & Action Buttons */}
             <div className="pt-3 border-t border-slate-200">
               <div className="mb-3">
-                <div className="bg-blue-50/90 border border-blue-200/90 rounded-xl p-3 flex justify-between items-center w-full">
-                  <div className="text-left">
-                    <span className="bg-[#0A66C2] text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded uppercase font-black tracking-wider block w-max">BOOKING</span>
-                    <span className="text-sm sm:text-base font-black text-slate-900 mt-1 block">₹300 Advance</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10.5px] sm:text-xs font-black text-slate-700 flex items-center justify-end gap-1">
-                      <span>📦</span> ₹700 Cash on Delivery
-                    </span>
-                    <span className="text-[8.5px] text-slate-400 block mt-0.5">Pay remaining at doorstep</span>
-                  </div>
+                <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-xl p-3 text-center shadow-xs">
+                  <span className="bg-emerald-600 text-white text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider inline-block">COD AVAILABLE</span>
+                  <span className="text-xs sm:text-sm font-black text-emerald-800 mt-1.5 block">
+                    🚚 CASH ON DELIVERY AVAILABLE ALL OVER INDIA
+                  </span>
+                  <span className="text-[10px] text-slate-500 block font-bold mt-0.5">
+                    Order now & pay at your doorstep!
+                  </span>
                 </div>
               </div>
 
@@ -237,17 +234,14 @@ export const DeceShowcaseSection: React.FC<DeceShowcaseSectionProps> = ({ onWhat
             {/* Price & Action Buttons */}
             <div className="pt-3 border-t border-slate-200">
               <div className="mb-3">
-                <div className="bg-amber-50/90 border border-amber-200/90 rounded-xl p-3 flex justify-between items-center w-full">
-                  <div className="text-left">
-                    <span className="bg-amber-600 text-white text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded uppercase font-black tracking-wider block w-max">BOOKING</span>
-                    <span className="text-sm sm:text-base font-black text-slate-900 mt-1 block">₹300 Advance</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10.5px] sm:text-xs font-black text-slate-700 flex items-center justify-end gap-1">
-                      <span>📦</span> ₹1700 Cash on Delivery
-                    </span>
-                    <span className="text-[8.5px] text-slate-500 block mt-0.5">Pay remaining at doorstep</span>
-                  </div>
+                <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-xl p-3 text-center shadow-xs">
+                  <span className="bg-emerald-600 text-white text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider inline-block">COD AVAILABLE</span>
+                  <span className="text-xs sm:text-sm font-black text-emerald-800 mt-1.5 block">
+                    🚚 CASH ON DELIVERY AVAILABLE ALL OVER INDIA
+                  </span>
+                  <span className="text-[10px] text-slate-500 block font-bold mt-0.5">
+                    Order now & pay at your doorstep!
+                  </span>
                 </div>
               </div>
 
