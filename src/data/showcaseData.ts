@@ -395,3 +395,144 @@ export const CATEGORY_SHOWCASES_DATA: Record<string, CategoryShowcaseData> = {
     ],
   },
 };
+
+/**
+ * =========================================================================
+ * 🎬 INSTAGRAM-STYLE FULL DEMO REELS FEED DATA
+ * -------------------------------------------------------------------------
+ * These are the vertical reels displayed immediately when students visit
+ * the website. Add your YouTube Shorts, YouTube Video, or MP4 links below!
+ * =========================================================================
+ */
+export interface ReelFeedItem {
+  id: string;
+  category: 'all' | 'dece_proj' | 'dece_hw' | 'ba_hw' | 'ma_hw' | 'dispatch';
+  categoryLabel: string;
+  title: string;
+  subjectCode: string;
+  duration: string;
+  views: string;
+  likes: string;
+  initialLikesCount: number;
+  thumbnail: string;
+  videoUrl: string; // 👈 PASTE YOUR YOUTUBE / SHORTS / MP4 LINK HERE
+  description: string;
+  badge: string;
+  whatsappMessage: string;
+}
+
+export const REELS_FEED_ITEMS: ReelFeedItem[] = [
+  {
+    id: 'reel-dece-proj-1',
+    category: 'dece_proj',
+    categoryLabel: 'DECE Project',
+    title: 'DECE-4 Internship Project File Hardcover Unboxing & Complete File Review',
+    subjectCode: 'DECE-4 Project',
+    duration: '1:05',
+    views: '38.4k',
+    likes: '3.2k',
+    initialLikesCount: 3240,
+    thumbnail: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=900&auto=format&fit=crop',
+    videoUrl: '', // 👈 PASTE LINK 1 HERE (YouTube Shorts, YouTube Video, or MP4)
+    description: 'Full unboxing of hardcover DECE-4 project file binder with all 30 preschool activity plans, Annexure 1, 2, 3 and guide approval letter.',
+    badge: '100% IGNOU HQ Approved Format',
+    whatsappMessage: 'Hi Guru Nanak Photostat, I saw DECE-4 Project File Reel. Please send order details & sample.',
+  },
+  {
+    id: 'reel-dece-hw-1',
+    category: 'dece_hw',
+    categoryLabel: 'DECE Assignment',
+    title: 'DECE (DECE-1, 2, 3) Complete 3-Subject Handwritten Set Real Copy Quality Check',
+    subjectCode: 'DECE-1, 2, 3',
+    duration: '0:58',
+    views: '29.1k',
+    likes: '2.8k',
+    initialLikesCount: 2810,
+    thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=900&auto=format&fit=crop',
+    videoUrl: '', // 👈 PASTE LINK 2 HERE
+    description: 'Inspecting neat handwriting, margins, front page, and question paper for DECE 1st year assignment on clean A4 foolscap sheets.',
+    badge: '100% Handwritten • PASS Guarantee',
+    whatsappMessage: 'Hi Guru Nanak Photostat, I want to order DECE Handwritten Assignment Set (DECE 1, 2, 3).',
+  },
+  {
+    id: 'reel-dece-proj-2',
+    category: 'dece_proj',
+    categoryLabel: 'DECE Project',
+    title: 'DECE-4 Synopsis Approval Letter & Guide CV & Certificate Verification Guide',
+    subjectCode: 'DECE-4 Guide Docs',
+    duration: '0:50',
+    views: '24.7k',
+    likes: '1.9k',
+    initialLikesCount: 1940,
+    thumbnail: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=900&auto=format&fit=crop',
+    videoUrl: '', // 👈 PASTE LINK 3 HERE
+    description: 'Demonstrating valid Guide Resume, Qualification Certificate, and signed Annexure forms for 100% approval from Maidan Garhi.',
+    badge: 'Guide Support Included',
+    whatsappMessage: 'Hi Guru Nanak Photostat, I need DECE-4 Project Synopsis & Guide CV verification details.',
+  },
+  {
+    id: 'reel-ba-hw-1',
+    category: 'ba_hw',
+    categoryLabel: 'BA / BAG Assignment',
+    title: 'BEVAE-181 Environmental Studies High-Scoring Handwritten Assignment Sample',
+    subjectCode: 'BEVAE-181',
+    duration: '0:45',
+    views: '22.3k',
+    likes: '2.1k',
+    initialLikesCount: 2150,
+    thumbnail: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=900&auto=format&fit=crop',
+    videoUrl: '', // 👈 PASTE LINK 4 HERE
+    description: 'Neatly handwritten BEVAE-181 assignment showing neat diagram drawings, bold subheadings, and clear margin lines.',
+    badge: '90%+ Score Quality',
+    whatsappMessage: 'Hi Guru Nanak Photostat, I want to order BEVAE-181 Handwritten Assignment.',
+  },
+  {
+    id: 'reel-ba-hw-2',
+    category: 'ba_hw',
+    categoryLabel: 'BA / BAG Assignment',
+    title: 'BHDLA-135 Hindi Bhasha Vividh Prayog Beautiful Calligraphy Handwriting Reel',
+    subjectCode: 'BHDLA-135',
+    duration: '0:52',
+    views: '19.8k',
+    likes: '1.7k',
+    initialLikesCount: 1720,
+    thumbnail: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=900&auto=format&fit=crop',
+    videoUrl: '', // 👈 PASTE LINK 5 HERE
+    description: 'Hindi medium BHDLA-135 assignment with beautiful Hindi calligraphic pen work on ruled A4 sheets.',
+    badge: 'Clean Pen Work',
+    whatsappMessage: 'Hi Guru Nanak Photostat, I want to order BHDLA-135 Hindi Handwritten Assignment.',
+  },
+  {
+    id: 'reel-ma-hw-1',
+    category: 'ma_hw',
+    categoryLabel: 'MA / Master Degree',
+    title: 'MHD-02 Adhunik Hindi Kavya Master Degree Handwritten Assignment Reel',
+    subjectCode: 'MHD-02',
+    duration: '0:48',
+    views: '17.5k',
+    likes: '1.5k',
+    initialLikesCount: 1530,
+    thumbnail: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=900&auto=format&fit=crop',
+    videoUrl: '', // 👈 PASTE LINK 6 HERE
+    description: 'Master Degree in Hindi (MHD) 30 pages handwritten paper written by PhD subject scholars with critical poetry analysis.',
+    badge: 'Expert Scholars Written',
+    whatsappMessage: 'Hi Guru Nanak Photostat, I want to order MHD-02 MA Hindi Assignment.',
+  },
+  {
+    id: 'reel-dispatch-1',
+    category: 'dispatch',
+    categoryLabel: 'Live Parcel Dispatch',
+    title: 'SpeedPost & Delhivery Daily Parcel Dispatch From Fatehabad Shop Reel',
+    subjectCode: 'All India Delivery',
+    duration: '0:40',
+    views: '45.2k',
+    likes: '4.8k',
+    initialLikesCount: 4850,
+    thumbnail: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=900&auto=format&fit=crop',
+    videoUrl: '', // 👈 PASTE LINK 7 HERE
+    description: 'Live packaging, waterproof bubble wrap sealing, and SpeedPost/Delhivery courier dispatch process with tracking slips.',
+    badge: 'Cash on Delivery Available',
+    whatsappMessage: 'Hi Guru Nanak Photostat, I want to know about delivery and Cash on Delivery to my pin code.',
+  },
+];
+

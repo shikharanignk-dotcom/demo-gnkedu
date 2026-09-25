@@ -28,6 +28,7 @@ import { AiAssistantModal } from './components/AiAssistantModal';
 import { StickyFloatingCTA } from './components/StickyFloatingCTA';
 import { BackgroundAudioPlayer } from './components/BackgroundAudioPlayer';
 import { OfferPopupModal } from './components/OfferPopupModal';
+import { ReelsHeroFeed } from './components/ReelsHeroFeed';
 
 export function App() {
   const [products, setProducts] = useState<Product[]>(PRODUCTS_DATA);
@@ -142,11 +143,24 @@ export function App() {
         onOpenWishlist={() => {}}
       />
 
-      {/* HERO SECTION */}
-      <HeroSection
-        onWhatsAppClick={(msg) => handleWhatsAppClick(msg || ORDER_NOW_MSG, true)}
-        onSearchSubmit={(q) => setSearchQuery(q)}
+      {/* 🎬 INSTAGRAM / SNAPCHAT REELS DEMO HERO FEED (Site Load Trust Builder) */}
+      <ReelsHeroFeed
+        onWhatsAppClick={handleWhatsAppClick}
+        onExploreWebsite={() => {
+          const el = document.getElementById('website-main-content');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
       />
+
+      {/* 🌐 MAIN WEBSITE DETAILS, CATALOG, REVIEWS & FAQ */}
+      <div id="website-main-content">
+        {/* HERO SECTION */}
+        <HeroSection
+          onWhatsAppClick={(msg) => handleWhatsAppClick(msg || ORDER_NOW_MSG, true)}
+          onSearchSubmit={(q) => setSearchQuery(q)}
+        />
 
       {/* SPECIAL DECE ASSIGNMENT & PROJECT SHOWCASE */}
       <DeceShowcaseSection onWhatsAppClick={(msg, isOrder) => handleWhatsAppClick(msg, isOrder ?? true)} />
@@ -196,6 +210,7 @@ export function App() {
         onOpenAdmin={() => setShowAdminModal(true)}
         onWhatsAppClick={(msg) => handleWhatsAppClick(msg || WHATSAPP_INQUIRY_MSG, false)}
       />
+      </div>
 
       {/* STICKY FLOATING CTAS (WhatsApp, Call, Wishlist, Offer) */}
       <StickyFloatingCTA

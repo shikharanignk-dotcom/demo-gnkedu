@@ -23,6 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
+    { name: '🎬 Live Reels', href: '#reels-feed' },
     { name: 'Services & Samples', href: '#products' },
     { name: 'Search Course', href: '#search' },
     { name: 'Why Choose Us', href: '#why-us' },
