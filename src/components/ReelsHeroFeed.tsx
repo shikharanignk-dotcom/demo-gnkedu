@@ -259,7 +259,6 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     <div
       id="reels-feed"
       ref={containerRef}
-      onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       className="relative bg-slate-950 text-white min-h-[92vh] sm:min-h-[88vh] flex flex-col justify-between overflow-hidden select-none border-b border-slate-800"
