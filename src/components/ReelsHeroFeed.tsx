@@ -11,13 +11,11 @@ import {
   ChevronDown,
   Sparkles,
   ArrowDown,
-  ExternalLink,
   ShieldCheck,
-  Eye,
   CheckCircle2,
-  Layers,
   ShoppingBag,
-  Info
+  Info,
+  Maximize2
 } from 'lucide-react';
 import { REELS_FEED_ITEMS, ReelFeedItem, getYouTubeEmbedUrl } from '../data/showcaseData';
 
@@ -38,11 +36,15 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
   const [likesCounts, setLikesCounts] = useState<Record<string, number>>({});
   const [copiedToast, setCopiedToast] = useState<boolean>(false);
   const [showEndCard, setShowEndCard] = useState<boolean>(false);
+  const [showHeartPop, setShowHeartPop] = useState<boolean>(false);
+  const [videoProgress, setVideoProgress] = useState<number>(0);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const isScrollingRef = useRef<boolean>(false);
+  const lastTapRef = useRef<number>(0);
 
-  // Filter reels by selected category
+  // Filter reels by selected DECE category
   const filteredReels = selectedCategory === 'all'
     ? REELS_FEED_ITEMS
     : REELS_FEED_ITEMS.filter((item) => item.category === selectedCategory);
@@ -53,10 +55,32 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
   useEffect(() => {
     const initialLikes: Record<string, number> = {};
     REELS_FEED_ITEMS.forEach((item) => {
-      initialLikes[item.id] = item.initialLikesCount || 1200;
+      initialLikes[item.id] = item.initialLikesCount || 3200;
     });
     setLikesCounts(initialLikes);
   }, []);
+
+  // Control HTML5 video playback
+  useEffect(() => {
+    setVideoProgress(0);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      if (isPlaying) {
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Autoplay with sound may be blocked, fall back to muted
+            if (!isMuted) {
+              setIsMuted(true);
+              videoRef.current?.play().catch(() => {});
+            }
+          });
+        }
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [currentReelIndex, activeReel?.id, isPlaying]);
 
   // Reset to first reel on category change
   const handleCategorySelect = (cat: string) => {
@@ -64,6 +88,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     setCurrentReelIndex(0);
     setShowEndCard(false);
     setIsPlaying(true);
+    setVideoProgress(0);
   };
 
   // Navigate to Next Reel
@@ -72,6 +97,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
       setCurrentReelIndex((prev) => prev + 1);
       setShowEndCard(false);
       setIsPlaying(true);
+      setVideoProgress(0);
     } else {
       setShowEndCard(true);
     }
@@ -83,6 +109,33 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
       setCurrentReelIndex((prev) => prev - 1);
       setShowEndCard(false);
       setIsPlaying(true);
+      setVideoProgress(0);
+    }
+  };
+
+  // Mouse wheel scroll to change reels smoothly
+  const handleWheel = (e: React.WheelEvent) => {
+    if (isScrollingRef.current) return;
+
+    if (e.deltaY > 30) {
+      // Scroll Down -> Next Reel
+      if (currentReelIndex < filteredReels.length - 1) {
+        isScrollingRef.current = true;
+        handleNextReel();
+        setTimeout(() => { isScrollingRef.current = false; }, 500);
+      } else {
+        // At the end -> let user naturally transition to website
+        isScrollingRef.current = true;
+        setShowEndCard(true);
+        setTimeout(() => { isScrollingRef.current = false; }, 500);
+      }
+    } else if (e.deltaY < -30) {
+      // Scroll Up -> Previous Reel
+      if (currentReelIndex > 0) {
+        isScrollingRef.current = true;
+        handlePrevReel();
+        setTimeout(() => { isScrollingRef.current = false; }, 500);
+      }
     }
   };
 
@@ -92,8 +145,26 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     setLikedReels((prev) => ({ ...prev, [reelId]: !isLiked }));
     setLikesCounts((prev) => ({
       ...prev,
-      [reelId]: (prev[reelId] || 1000) + (isLiked ? -1 : 1),
+      [reelId]: (prev[reelId] || 3000) + (isLiked ? -1 : 1),
     }));
+  };
+
+  // Handle Double Tap / Click on Video to Like
+  const handleVideoAreaClick = () => {
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+    if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+      // Double tap detected -> Like with heart pop
+      if (!likedReels[activeReel.id]) {
+        handleToggleLike(activeReel.id);
+      }
+      setShowHeartPop(true);
+      setTimeout(() => setShowHeartPop(false), 900);
+    } else {
+      // Single tap -> Play / Pause
+      setIsPlaying(!isPlaying);
+    }
+    lastTapRef.current = now;
   };
 
   // Handle Share / Copy Link
@@ -101,7 +172,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     if (navigator.share) {
       navigator.share({
         title: reel.title,
-        text: `Check out this IGNOU demo work by Guru Nanak Photostat: ${reel.title}`,
+        text: `Check out this IGNOU DECE demo work by Guru Nanak Photostat: ${reel.title}`,
         url: window.location.href,
       }).catch(() => {});
     } else {
@@ -118,6 +189,9 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
         handleNextReel();
       } else if (e.key === 'ArrowUp') {
         handlePrevReel();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        setIsPlaying((p) => !p);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -132,20 +206,18 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
   const handleTouchEnd = (e: React.TouchEvent) => {
     const touchEndY = e.changedTouches[0].clientY;
     const diff = touchStartY.current - touchEndY;
-    if (diff > 50) {
+    if (diff > 45) {
       handleNextReel(); // Swiped Up -> Next Reel
-    } else if (diff < -50) {
+    } else if (diff < -45) {
       handlePrevReel(); // Swiped Down -> Prev Reel
     }
   };
 
-  const categories = [
-    { id: 'all', label: '🔥 All Reels' },
-    { id: 'dece_proj', label: '📁 DECE Project' },
-    { id: 'dece_hw', label: '📘 DECE Assignment' },
-    { id: 'ba_hw', label: '✍️ BA / BCOM' },
-    { id: 'ma_hw', label: '🎓 MA / MBA' },
-    { id: 'dispatch', label: '📦 Live Dispatch' },
+  // 100% Focused on DECE (Removed MA / BA as requested)
+  const deceCategories = [
+    { id: 'all', label: `🔥 All DECE Demos (${REELS_FEED_ITEMS.length})` },
+    { id: 'dece_proj', label: '📁 DECE-4 Project Files' },
+    { id: 'dece_hw', label: '📘 DECE Assignments' },
   ];
 
   const youtubeEmbedUrl = getYouTubeEmbedUrl(activeReel.videoUrl);
@@ -154,9 +226,10 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     <div
       id="reels-feed"
       ref={containerRef}
-      className="relative bg-slate-950 text-white min-h-[92vh] sm:min-h-[88vh] flex flex-col justify-between overflow-hidden select-none border-b border-slate-800"
+      onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      className="relative bg-slate-950 text-white min-h-[92vh] sm:min-h-[88vh] flex flex-col justify-between overflow-hidden select-none border-b border-slate-800"
     >
       {/* ========================================================= */}
       {/* 1. TOP BAR: Category Pills + Skip to Website CTA */}
@@ -171,29 +244,29 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
             </span>
             <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-amber-300">
-              Live Work Demos
+              Live DECE Work Demos
             </span>
           </div>
 
           {/* Quick Exit: Skip to Website (Guarantees customer is never trapped) */}
           <button
             onClick={onExploreWebsite}
-            className="flex items-center gap-1.5 bg-white/10 hover:bg-[#FF7A00] text-white hover:text-white px-3 py-1.5 rounded-full text-xs font-black backdrop-blur-md border border-white/20 transition-all cursor-pointer shadow-lg active:scale-95 shrink-0 group"
+            className="flex items-center gap-1.5 bg-white/10 hover:bg-[#FF7A00] text-white px-3 py-1.5 rounded-full text-xs font-black backdrop-blur-md border border-white/20 transition-all cursor-pointer shadow-lg active:scale-95 shrink-0 group"
           >
             <span>Skip to Full Website</span>
             <ArrowDown className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
           </button>
         </div>
 
-        {/* Category Filter Pills Bar */}
+        {/* Category Filter Pills Bar (ONLY DECE) */}
         <div className="max-w-5xl mx-auto mt-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
-          {categories.map((cat) => {
+          {deceCategories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => handleCategorySelect(cat.id)}
-                className={`px-3 py-1 rounded-full text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3.5 py-1 rounded-full text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-[#0A66C2] text-white shadow-md ring-2 ring-blue-400/40 scale-105'
                     : 'bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white'
@@ -211,31 +284,37 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
       {/* ========================================================= */}
       <div className="flex-1 flex items-center justify-center p-2 sm:p-4 relative">
         
-        {/* Main Phone-style Reel Card Frame */}
-        <div className="relative w-full max-w-[420px] h-[72vh] sm:h-[75vh] max-h-[760px] bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800 flex items-center justify-center">
+        {/* Main Phone-style Reel Card Frame with Wheel Scroll listener */}
+        <div
+          onClick={handleVideoAreaClick}
+          className="relative w-full max-w-[420px] h-[72vh] sm:h-[75vh] max-h-[760px] bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800 flex items-center justify-center cursor-pointer group"
+        >
           
           {/* Top Segmented Story Progress Bar */}
-          <div className="absolute top-2.5 left-3 right-3 z-30 flex gap-1">
+          <div className="absolute top-2.5 left-3 right-3 z-30 flex gap-1 pointer-events-none">
             {filteredReels.map((_, idx) => (
               <div
                 key={idx}
                 className="h-1 flex-1 bg-white/25 rounded-full overflow-hidden backdrop-blur-xs"
               >
                 <div
-                  className={`h-full transition-all duration-300 rounded-full ${
+                  className={`h-full transition-all duration-100 ease-linear rounded-full ${
                     idx < currentReelIndex
                       ? 'w-full bg-red-500'
                       : idx === currentReelIndex
-                      ? 'w-full bg-amber-400'
+                      ? 'bg-amber-400'
                       : 'w-0'
                   }`}
+                  style={{
+                    width: idx < currentReelIndex ? '100%' : idx === currentReelIndex ? `${videoProgress}%` : '0%',
+                  }}
                 />
               </div>
             ))}
           </div>
 
-          {/* Reel Counter Badge (e.g. "Reel 2 of 7") */}
-          <div className="absolute top-5 left-3.5 z-30 flex items-center gap-2">
+          {/* Reel Counter Badge (e.g. "Reel 2 of 6") */}
+          <div className="absolute top-5 left-3.5 z-30 flex items-center gap-2 pointer-events-none">
             <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-0.5 rounded-full border border-white/15">
               {currentReelIndex + 1} / {filteredReels.length}
             </span>
@@ -246,7 +325,14 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
 
           {/* Mute / Unmute Floating Quick Toggle on top-right */}
           <button
-            onClick={() => setIsMuted(!isMuted)}
+            onClick={(e) => {
+              e.stopPropagation();
+              const nextMuted = !isMuted;
+              setIsMuted(nextMuted);
+              if (videoRef.current) {
+                videoRef.current.muted = nextMuted;
+              }
+            }}
             className="absolute top-5 right-3.5 z-30 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md border border-white/15 transition-all cursor-pointer"
             title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
           >
@@ -271,7 +357,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
                 allowFullScreen
               />
             ) : (
-              // Direct MP4 Video Player
+              // Direct MP4 Video Player with Time Progress Tracking
               <video
                 ref={videoRef}
                 key={activeReel.id}
@@ -281,6 +367,12 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
                 autoPlay
                 muted={isMuted}
                 loop
+                onTimeUpdate={() => {
+                  if (videoRef.current && videoRef.current.duration) {
+                    setVideoProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
+                  }
+                }}
+                onEnded={handleNextReel}
                 className="w-full h-full object-cover"
               />
             )
@@ -297,14 +389,27 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
                   <Play className="w-8 h-8 fill-current ml-1" />
                 </div>
                 <span className="bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider mb-1">
-                  Video Demo Ready To Link
+                  DECE Demo Reel
                 </span>
                 <p className="text-white font-black text-sm sm:text-base leading-snug drop-shadow-md">
                   {activeReel.title}
                 </p>
-                <p className="text-slate-300 text-xs mt-1 max-w-xs drop-shadow">
-                  Paste your YouTube Shorts or Video link to play live here!
-                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Double-Tap Heart Animation Overlay */}
+          {showHeartPop && (
+            <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none animate-in zoom-in-50 fade-in duration-300">
+              <Heart className="w-24 h-24 text-red-500 fill-red-500 drop-shadow-2xl animate-bounce" />
+            </div>
+          )}
+
+          {/* Play / Pause Center Icon Overlay (when paused) */}
+          {!isPlaying && !youtubeEmbedUrl && (
+            <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none bg-black/30">
+              <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white ring-2 ring-white/30">
+                <Play className="w-8 h-8 fill-current ml-1" />
               </div>
             </div>
           )}
@@ -315,8 +420,10 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
           {/* ===================================================== */}
           {/* FLOATING ACTION STACK (Right Side like Instagram) */}
           {/* ===================================================== */}
-          <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-3.5">
-            
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-3.5"
+          >
             {/* WhatsApp Quick Order Direct Button */}
             <button
               onClick={() => onWhatsAppClick(activeReel.whatsappMessage, true)}
@@ -335,7 +442,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
             <button
               onClick={() => handleToggleLike(activeReel.id)}
               className="w-11 h-11 rounded-full bg-slate-900/80 hover:bg-red-600/90 text-white flex items-center justify-center backdrop-blur-md border border-white/15 shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer"
-              title="Like this demo"
+              title="Like this demo (or double click video)"
             >
               <Heart
                 className={`w-5 h-5 transition-colors ${
@@ -363,7 +470,10 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
           {/* ===================================================== */}
           {/* BOTTOM REEL INFO OVERLAY */}
           {/* ===================================================== */}
-          <div className="absolute bottom-3 left-3 right-16 z-20 text-left pointer-events-auto">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute bottom-3 left-3 right-16 z-20 text-left pointer-events-auto"
+          >
             {/* Trust Badge */}
             <div className="inline-flex items-center gap-1.5 bg-emerald-500/25 border border-emerald-400/40 text-emerald-300 text-[10px] font-black px-2.5 py-0.5 rounded-full mb-1.5 backdrop-blur-xs">
               <ShieldCheck className="w-3 h-3 text-emerald-400" />
@@ -403,12 +513,15 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
           {/* END OF REELS POPUP MODAL (When user finishes all reels) */}
           {/* ===================================================== */}
           {showEndCard && (
-            <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-md z-40 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in-95 duration-300">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute inset-0 bg-slate-950/95 backdrop-blur-md z-40 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in-95 duration-300"
+            >
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center font-black text-2xl shadow-xl mb-3">
                 🎉
               </div>
               <h4 className="text-lg font-black text-white">
-                You've Checked All Demos!
+                You've Checked All DECE Demos!
               </h4>
               <p className="text-xs text-slate-300 mt-1 max-w-xs leading-relaxed">
                 Explore our full course catalog, sample solved PDFs, pass guarantee, and student reviews on the website.
@@ -426,6 +539,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
                   onClick={() => {
                     setCurrentReelIndex(0);
                     setShowEndCard(false);
+                    setVideoProgress(0);
                   }}
                   className="w-full bg-white/10 hover:bg-white/20 text-slate-300 font-bold py-2 rounded-xl text-xs transition-all cursor-pointer"
                 >
@@ -449,7 +563,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
                 ? 'bg-slate-900/40 text-slate-600 cursor-not-allowed'
                 : 'bg-slate-900/80 hover:bg-[#0A66C2] text-white hover:scale-110 active:scale-95'
             }`}
-            title="Previous Reel (or Arrow Up)"
+            title="Previous Reel (or Scroll Up / Arrow Up)"
           >
             <ChevronUp className="w-6 h-6" />
           </button>
@@ -457,7 +571,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
           <button
             onClick={handleNextReel}
             className="w-12 h-12 rounded-full bg-slate-900/80 hover:bg-red-600 text-white flex items-center justify-center border border-white/20 backdrop-blur-md shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer"
-            title="Next Reel (or Arrow Down)"
+            title="Next Reel (or Scroll Down / Arrow Down)"
           >
             <ChevronDown className="w-6 h-6" />
           </button>
@@ -472,7 +586,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
         {/* Left: Reel count info */}
         <div className="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5">
           <Info className="w-3.5 h-3.5 text-slate-400" />
-          <span>Swipe up or tap arrows for next reel</span>
+          <span>Scroll mouse wheel or swipe up for next reel</span>
         </div>
 
         {/* Right: Scroll to Full Website */}
@@ -480,7 +594,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
           onClick={onExploreWebsite}
           className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-black tracking-wide transition-colors cursor-pointer group"
         >
-          <span>Explore All Courses Below</span>
+          <span>Explore All DECE Courses Below</span>
           <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
         </button>
       </div>
