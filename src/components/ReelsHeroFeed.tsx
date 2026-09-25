@@ -63,24 +63,28 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
   // Control video playback when active reel or play state changes
   useEffect(() => {
     setVideoProgress(0);
-    // Pause all other videos
+    const activeVid = videoRefs.current[currentReelIndex];
+    if (activeVid) {
+      activeVid.muted = isMuted;
+      if (isPlaying) {
+        const p = activeVid.play();
+        if (p !== undefined) {
+          p.catch(() => {
+            activeVid.muted = true;
+            setIsMuted(true);
+            activeVid.play().catch(() => {});
+          });
+        }
+      }
+    }
+    // Pause other non-active videos
     Object.keys(videoRefs.current).forEach((key) => {
       const idx = Number(key);
-      const vid = videoRefs.current[idx];
-      if (vid) {
-        if (idx === currentReelIndex && isPlaying) {
-          vid.currentTime = 0;
-          vid.muted = isMuted;
-          const p = vid.play();
-          if (p !== undefined) {
-            p.catch(() => {
-              vid.muted = true;
-              setIsMuted(true);
-              vid.play().catch(() => {});
-            });
-          }
-        } else {
+      if (idx !== currentReelIndex) {
+        const vid = videoRefs.current[idx];
+        if (vid) {
           vid.pause();
+          vid.currentTime = 0;
         }
       }
     });
@@ -191,7 +195,17 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
       setShowHeartPop(true);
       setTimeout(() => setShowHeartPop(false), 900);
     } else {
-      setIsPlaying(!isPlaying);
+      const activeVid = videoRefs.current[currentReelIndex];
+      if (activeVid) {
+        if (activeVid.paused) {
+          activeVid.play().then(() => setIsPlaying(true)).catch(() => {});
+        } else {
+          activeVid.pause();
+          setIsPlaying(false);
+        }
+      } else {
+        setIsPlaying(!isPlaying);
+      }
     }
     lastTapRef.current = now;
   };
@@ -401,12 +415,27 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
                       />
                     ) : isNearby ? (
                       <video
-                        ref={(el) => { videoRefs.current[idx] = el; }}
+                        ref={(el) => {
+                          videoRefs.current[idx] = el;
+                          if (el) {
+                            el.muted = isMuted;
+                            if (isCurrent && isPlaying) {
+                              el.play().catch(() => {});
+                            }
+                          }
+                        }}
                         src={reel.videoUrl}
                         preload={isCurrent ? 'auto' : 'metadata'}
                         playsInline
+                        autoPlay={isCurrent}
                         muted={isMuted}
                         loop
+                        onCanPlay={(e) => {
+                          if (isCurrent && isPlaying) {
+                            e.currentTarget.muted = isMuted;
+                            e.currentTarget.play().catch(() => {});
+                          }
+                        }}
                         onTimeUpdate={() => {
                           if (isCurrent && videoRefs.current[idx]?.duration) {
                             setVideoProgress(

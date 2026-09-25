@@ -18,8 +18,16 @@ export const BackgroundAudioPlayer: React.FC = () => {
           console.log('Background voice started playing successfully.');
         })
         .catch((err) => {
-          console.warn('Autoplay blocked by browser policy. Retrying on user interaction.', err);
-          isStartedRef.current = false; // Reset so gesture listener can start it
+          // If NotSupportedError or dead link (401), do NOT retry
+          if (err.name === 'NotSupportedError' || err.message?.includes('supported')) {
+            console.warn('Background audio source not available or expired.');
+            isStartedRef.current = true;
+            return;
+          }
+          // Only retry on user interaction if it was a NotAllowedError (browser autoplay policy)
+          if (err.name === 'NotAllowedError') {
+            isStartedRef.current = false;
+          }
         });
     }
   };
@@ -56,6 +64,9 @@ export const BackgroundAudioPlayer: React.FC = () => {
       ref={audioRef}
       src={MAIN_AUDIO_URL}
       preload="auto"
+      onError={() => {
+        isStartedRef.current = true;
+      }}
       style={{ display: 'none' }}
     />
   );
