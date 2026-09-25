@@ -39,7 +39,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
   const [showHeartPop, setShowHeartPop] = useState<boolean>(false);
   const [videoProgress, setVideoProgress] = useState<number>(0);
 
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isScrollingRef = useRef<boolean>(false);
   const lastTapRef = useRef<number>(0);
@@ -60,27 +60,38 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     setLikesCounts(initialLikes);
   }, []);
 
-  // Control HTML5 video playback
+  // Control video playback when active reel or play state changes
   useEffect(() => {
     setVideoProgress(0);
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      if (isPlaying) {
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            // Autoplay with sound may be blocked, fall back to muted
-            if (!isMuted) {
+    // Pause all other videos
+    Object.keys(videoRefs.current).forEach((key) => {
+      const idx = Number(key);
+      const vid = videoRefs.current[idx];
+      if (vid) {
+        if (idx === currentReelIndex && isPlaying) {
+          vid.currentTime = 0;
+          vid.muted = isMuted;
+          const p = vid.play();
+          if (p !== undefined) {
+            p.catch(() => {
+              vid.muted = true;
               setIsMuted(true);
-              videoRef.current?.play().catch(() => {});
-            }
-          });
+              vid.play().catch(() => {});
+            });
+          }
+        } else {
+          vid.pause();
         }
-      } else {
-        videoRef.current.pause();
       }
-    }
-  }, [currentReelIndex, activeReel?.id, isPlaying]);
+    });
+  }, [currentReelIndex, isPlaying]);
+
+  // Sync mute state across videos
+  useEffect(() => {
+    Object.values(videoRefs.current).forEach((vid) => {
+      if (vid) vid.muted = isMuted;
+    });
+  }, [isMuted]);
 
   // Reset to first reel on category change
   const handleCategorySelect = (cat: string) => {
@@ -113,31 +124,51 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     }
   };
 
-  // Mouse wheel scroll to change reels smoothly
-  const handleWheel = (e: React.WheelEvent) => {
-    if (isScrollingRef.current) return;
+  // Native Wheel Event listener with { passive: false } to PREVENT whole page from scrolling
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
 
-    if (e.deltaY > 30) {
-      // Scroll Down -> Next Reel
-      if (currentReelIndex < filteredReels.length - 1) {
-        isScrollingRef.current = true;
-        handleNextReel();
-        setTimeout(() => { isScrollingRef.current = false; }, 500);
-      } else {
-        // At the end -> let user naturally transition to website
-        isScrollingRef.current = true;
-        setShowEndCard(true);
-        setTimeout(() => { isScrollingRef.current = false; }, 500);
+    const onWheelHandler = (e: WheelEvent) => {
+      // Debounce rapid wheel turns
+      if (isScrollingRef.current) {
+        e.preventDefault();
+        return;
       }
-    } else if (e.deltaY < -30) {
-      // Scroll Up -> Previous Reel
-      if (currentReelIndex > 0) {
-        isScrollingRef.current = true;
-        handlePrevReel();
-        setTimeout(() => { isScrollingRef.current = false; }, 500);
+
+      if (e.deltaY > 20) {
+        // Scroll Down -> Next Reel
+        if (currentReelIndex < filteredReels.length - 1) {
+          e.preventDefault();
+          isScrollingRef.current = true;
+          handleNextReel();
+          setTimeout(() => { isScrollingRef.current = false; }, 420);
+        } else if (!showEndCard) {
+          e.preventDefault();
+          isScrollingRef.current = true;
+          setShowEndCard(true);
+          setTimeout(() => { isScrollingRef.current = false; }, 420);
+        }
+        // If showEndCard is already open, do not prevent default, allow scrolling to website
+      } else if (e.deltaY < -20) {
+        // Scroll Up -> Previous Reel
+        if (showEndCard) {
+          e.preventDefault();
+          setShowEndCard(false);
+        } else if (currentReelIndex > 0) {
+          e.preventDefault();
+          isScrollingRef.current = true;
+          handlePrevReel();
+          setTimeout(() => { isScrollingRef.current = false; }, 420);
+        }
       }
-    }
-  };
+    };
+
+    el.addEventListener('wheel', onWheelHandler, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheelHandler);
+    };
+  }, [currentReelIndex, filteredReels.length, showEndCard]);
 
   // Handle Like Toggle
   const handleToggleLike = (reelId: string) => {
@@ -154,14 +185,12 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     const now = Date.now();
     const DOUBLE_TAP_DELAY = 300;
     if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
-      // Double tap detected -> Like with heart pop
       if (!likedReels[activeReel.id]) {
         handleToggleLike(activeReel.id);
       }
       setShowHeartPop(true);
       setTimeout(() => setShowHeartPop(false), 900);
     } else {
-      // Single tap -> Play / Pause
       setIsPlaying(!isPlaying);
     }
     lastTapRef.current = now;
@@ -200,20 +229,24 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
 
   // Touch Swipe navigation for mobile
   const touchStartY = useRef<number>(0);
+  const touchStartX = useRef<number>(0);
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
   };
   const handleTouchEnd = (e: React.TouchEvent) => {
-    const touchEndY = e.changedTouches[0].clientY;
-    const diff = touchStartY.current - touchEndY;
-    if (diff > 45) {
-      handleNextReel(); // Swiped Up -> Next Reel
-    } else if (diff < -45) {
-      handlePrevReel(); // Swiped Down -> Prev Reel
+    const diffY = touchStartY.current - e.changedTouches[0].clientY;
+    const diffX = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 35) {
+      if (diffY > 0) {
+        handleNextReel(); // Swiped Up -> Next Reel
+      } else {
+        handlePrevReel(); // Swiped Down -> Prev Reel
+      }
     }
   };
 
-  // 100% Focused on DECE (Removed MA / BA as requested)
+  // 100% Focused on DECE
   const deceCategories = [
     { id: 'all', label: `🔥 All DECE Demos (${REELS_FEED_ITEMS.length})` },
     { id: 'dece_proj', label: '📁 DECE-4 Project Files' },
@@ -284,10 +317,10 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
       {/* ========================================================= */}
       <div className="flex-1 flex items-center justify-center p-2 sm:p-4 relative">
         
-        {/* Main Phone-style Reel Card Frame with Wheel Scroll listener */}
+        {/* Main Phone-style Reel Card Frame with Wheel & Touch Navigation */}
         <div
           onClick={handleVideoAreaClick}
-          className="relative w-full max-w-[420px] h-[72vh] sm:h-[75vh] max-h-[760px] bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800 flex items-center justify-center cursor-pointer group"
+          className="relative w-full max-w-[400px] h-[78vh] sm:h-[82vh] max-h-[820px] bg-black rounded-3xl overflow-hidden shadow-2xl border border-slate-800 flex items-center justify-center cursor-pointer group select-none"
         >
           
           {/* Top Segmented Story Progress Bar */}
@@ -329,8 +362,8 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
               e.stopPropagation();
               const nextMuted = !isMuted;
               setIsMuted(nextMuted);
-              if (videoRef.current) {
-                videoRef.current.muted = nextMuted;
+              if (videoRefs.current[currentReelIndex]) {
+                videoRefs.current[currentReelIndex]!.muted = nextMuted;
               }
             }}
             className="absolute top-5 right-3.5 z-30 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md border border-white/15 transition-all cursor-pointer"
@@ -344,54 +377,62 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
           </button>
 
           {/* ===================================================== */}
-          {/* VIDEO / EMBED / THUMBNAIL DISPLAY */}
+          {/* VERTICAL SLIDING REEL TRACK (Instagram / TikTok Style) */}
           {/* ===================================================== */}
-          {activeReel.videoUrl ? (
-            youtubeEmbedUrl ? (
-              // YouTube / YouTube Shorts Embed
-              <iframe
-                key={activeReel.id}
-                src={`${youtubeEmbedUrl}&mute=${isMuted ? 1 : 0}`}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              // Direct MP4 Video Player with Time Progress Tracking
-              <video
-                ref={videoRef}
-                key={activeReel.id}
-                src={activeReel.videoUrl}
-                preload="auto"
-                playsInline
-                autoPlay
-                muted={isMuted}
-                loop
-                onTimeUpdate={() => {
-                  if (videoRef.current && videoRef.current.duration) {
-                    setVideoProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
-                  }
-                }}
-                onEnded={handleNextReel}
-                className="w-full h-full object-cover bg-black"
-              />
-            )
-          ) : (
-            // Clean Dark Reel Placeholder without fake stock images
-            <div className="relative w-full h-full flex items-center justify-center bg-slate-950">
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
-                <div className="w-16 h-16 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-2xl mb-3 ring-4 ring-white/20 animate-pulse">
-                  <Play className="w-8 h-8 fill-current ml-1" />
+          <div
+            className="w-full h-full transition-transform duration-500 ease-out flex flex-col"
+            style={{ transform: `translateY(-${currentReelIndex * 100}%)` }}
+          >
+            {filteredReels.map((reel, idx) => {
+              const isCurrent = idx === currentReelIndex;
+              const isNearby = Math.abs(idx - currentReelIndex) <= 1;
+              const ytEmbed = getYouTubeEmbedUrl(reel.videoUrl);
+
+              return (
+                <div
+                  key={reel.id}
+                  className="w-full h-full shrink-0 relative bg-black flex items-center justify-center overflow-hidden"
+                >
+                  {reel.videoUrl ? (
+                    ytEmbed ? (
+                      <iframe
+                        src={isCurrent ? `${ytEmbed}&mute=${isMuted ? 1 : 0}` : ''}
+                        className="w-full h-full border-0 pointer-events-none"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      />
+                    ) : isNearby ? (
+                      <video
+                        ref={(el) => { videoRefs.current[idx] = el; }}
+                        src={reel.videoUrl}
+                        preload={isCurrent ? 'auto' : 'metadata'}
+                        playsInline
+                        muted={isMuted}
+                        loop
+                        onTimeUpdate={() => {
+                          if (isCurrent && videoRefs.current[idx]?.duration) {
+                            setVideoProgress(
+                              (videoRefs.current[idx]!.currentTime / videoRefs.current[idx]!.duration) * 100
+                            );
+                          }
+                        }}
+                        onEnded={() => {
+                          if (isCurrent) handleNextReel();
+                        }}
+                        className="w-full h-full object-cover bg-black"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-black" />
+                    )
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 p-6 text-center">
+                      <Play className="w-10 h-10 text-white/40 mb-2" />
+                      <p className="text-white text-xs font-bold">{reel.title}</p>
+                    </div>
+                  )}
                 </div>
-                <span className="bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider mb-1">
-                  DECE Demo Reel
-                </span>
-                <p className="text-white font-black text-sm sm:text-base leading-snug drop-shadow-md">
-                  {activeReel.title}
-                </p>
-              </div>
-            </div>
-          )}
+              );
+            })}
+          </div>
 
           {/* Double-Tap Heart Animation Overlay */}
           {showHeartPop && (
@@ -409,43 +450,43 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
             </div>
           )}
 
-          {/* Dark Bottom Gradient for Legibility */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-950/95 pointer-events-none z-10" />
+          {/* Subtle Bottom Vignette (Only bottom 28% of video, not blocking the middle) */}
+          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/95 via-black/50 to-transparent pointer-events-none z-10" />
 
           {/* ===================================================== */}
           {/* FLOATING ACTION STACK (Right Side like Instagram) */}
           {/* ===================================================== */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-3.5"
+            className="absolute right-2.5 bottom-16 z-20 flex flex-col items-center gap-3 pointer-events-auto"
           >
             {/* WhatsApp Quick Order Direct Button */}
             <button
               onClick={() => onWhatsAppClick(activeReel.whatsappMessage, true)}
-              className="w-11 h-11 rounded-full bg-[#00a884] hover:bg-emerald-600 text-white flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all cursor-pointer ring-2 ring-white/40 group relative"
+              className="w-10 h-10 rounded-full bg-[#00a884] hover:bg-emerald-600 text-white flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all cursor-pointer ring-2 ring-white/40 group relative"
               title="Order this Demo on WhatsApp"
             >
-              <MessageCircle className="w-6 h-6 fill-current" />
-              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <MessageCircle className="w-5 h-5 fill-current" />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
             </button>
-            <span className="text-[9.5px] font-black text-emerald-400 -mt-2">Order</span>
+            <span className="text-[9px] font-black text-emerald-400 -mt-2 drop-shadow">Order</span>
 
             {/* Like Button */}
             <button
               onClick={() => handleToggleLike(activeReel.id)}
-              className="w-11 h-11 rounded-full bg-slate-900/80 hover:bg-red-600/90 text-white flex items-center justify-center backdrop-blur-md border border-white/15 shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer"
-              title="Like this demo (or double click video)"
+              className="w-10 h-10 rounded-full bg-black/60 hover:bg-red-600 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer"
+              title="Like this demo"
             >
               <Heart
-                className={`w-5 h-5 transition-colors ${
+                className={`w-4 h-4 transition-colors ${
                   likedReels[activeReel.id] ? 'fill-red-500 text-red-500' : 'text-white'
                 }`}
               />
             </button>
-            <span className="text-[10px] font-bold text-slate-200 -mt-2">
+            <span className="text-[9.5px] font-bold text-slate-200 -mt-2 drop-shadow">
               {likesCounts[activeReel.id]
                 ? (likesCounts[activeReel.id] / 1000).toFixed(1) + 'k'
                 : activeReel.likes}
@@ -454,52 +495,57 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
             {/* Share / Copy Button */}
             <button
               onClick={() => handleShare(activeReel)}
-              className="w-11 h-11 rounded-full bg-slate-900/80 hover:bg-blue-600/90 text-white flex items-center justify-center backdrop-blur-md border border-white/15 shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer"
+              className="w-10 h-10 rounded-full bg-black/60 hover:bg-blue-600 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer"
               title="Share Reel"
             >
-              <Share2 className="w-5 h-5" />
+              <Share2 className="w-4 h-4" />
             </button>
-            <span className="text-[10px] font-bold text-slate-200 -mt-2">Share</span>
+            <span className="text-[9px] font-bold text-slate-200 -mt-2 drop-shadow">Share</span>
           </div>
 
           {/* ===================================================== */}
-          {/* BOTTOM REEL INFO OVERLAY */}
+          {/* COMPACT BOTTOM REEL INFO OVERLAY (NON-OBSTRUCTIVE) */}
           {/* ===================================================== */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-3 left-3 right-16 z-20 text-left pointer-events-auto"
+            className="absolute bottom-2.5 left-3 right-16 z-20 text-left pointer-events-auto"
           >
-            {/* Trust Badge */}
-            <div className="inline-flex items-center gap-1.5 bg-emerald-500/25 border border-emerald-400/40 text-emerald-300 text-[10px] font-black px-2.5 py-0.5 rounded-full mb-1.5 backdrop-blur-xs">
-              <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              <span>{activeReel.badge}</span>
+            {/* Subject Code + Trust Badge on single line */}
+            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+              <span className="inline-flex items-center gap-1 bg-[#0A66C2]/90 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
+                {activeReel.subjectCode}
+              </span>
+              <span className="inline-flex items-center gap-1 bg-emerald-500/30 border border-emerald-400/40 text-emerald-300 text-[9.5px] font-bold px-2 py-0.5 rounded-full backdrop-blur-xs">
+                <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />
+                <span>{activeReel.badge}</span>
+              </span>
             </div>
 
-            {/* Title */}
-            <h3 className="text-white text-xs sm:text-sm font-black leading-snug line-clamp-2 drop-shadow-md">
+            {/* Title (Single line, crisp font, no big text block) */}
+            <h3 className="text-white text-xs sm:text-sm font-bold leading-snug line-clamp-1 drop-shadow-md">
               {activeReel.title}
             </h3>
 
-            {/* Description */}
-            <p className="text-slate-300 text-[11px] leading-tight line-clamp-2 mt-1 drop-shadow-xs">
+            {/* Description (Single line compact) */}
+            <p className="text-slate-300 text-[10.5px] leading-tight line-clamp-1 mt-0.5 opacity-90 drop-shadow-xs">
               {activeReel.description}
             </p>
 
-            {/* WhatsApp CTA Bar */}
-            <div className="mt-2.5 flex items-center gap-2">
+            {/* WhatsApp & Website Quick CTA Row */}
+            <div className="mt-2 flex items-center gap-2">
               <button
                 onClick={() => onWhatsAppClick(activeReel.whatsappMessage, true)}
-                className="bg-[#FF7A00] hover:bg-orange-600 text-white px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-lg active:scale-95 transition-all cursor-pointer"
+                className="bg-gradient-to-r from-[#FF7A00] to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
-                <span>Book This Work</span>
+                <span>Order via WhatsApp (COD)</span>
               </button>
 
               <button
                 onClick={onExploreWebsite}
-                className="bg-white/15 hover:bg-white/25 text-white px-3 py-2 rounded-xl text-xs font-extrabold backdrop-blur-md border border-white/20 active:scale-95 transition-all cursor-pointer"
+                className="bg-white/15 hover:bg-white/25 text-white/90 px-2.5 py-1.5 rounded-lg text-[11px] font-bold backdrop-blur-md border border-white/20 active:scale-95 transition-all cursor-pointer"
               >
-                <span>Details & Pricing</span>
+                <span>Website Info</span>
               </button>
             </div>
           </div>
