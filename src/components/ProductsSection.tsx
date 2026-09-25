@@ -267,7 +267,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                       ref={videoRef}
                       key={activeReel.id}
                       src={activeReel.videoUrl}
-                      poster={activeReel.thumbnail}
+                      preload="auto"
                       playsInline
                       muted={isMutedReel}
                       onTimeUpdate={() => {
@@ -279,23 +279,16 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
                         setActiveReelIndex((prev) => (prev + 1) % currentCategoryData.reels.length);
                         setIsPlayingReel(false);
                       }}
-                      className={`w-full h-full object-cover transition-all duration-700 ${
+                      className={`w-full h-full object-cover bg-black transition-all duration-700 ${
                         isPlayingReel ? 'scale-105 filter brightness-95' : 'brightness-75 group-hover:scale-105'
                       }`}
                     />
                   )
                 ) : (
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    <img
-                      src={activeReel.thumbnail}
-                      alt={activeReel.title}
-                      className="w-full h-full object-cover brightness-75"
-                    />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-black/40 backdrop-blur-xs">
-                      <Video className="w-10 h-10 text-white/90 mb-2 drop-shadow" />
-                      <p className="text-white font-black text-sm sm:text-base drop-shadow">Demo Video Coming Soon</p>
-                      <p className="text-white/80 text-xs mt-0.5 max-w-xs">New video sample link will be added soon.</p>
-                    </div>
+                  <div className="relative w-full h-full flex flex-col items-center justify-center p-4 text-center bg-slate-950">
+                    <Video className="w-10 h-10 text-white/90 mb-2 drop-shadow" />
+                    <p className="text-white font-black text-sm sm:text-base drop-shadow">DECE Demo Reel</p>
+                    <p className="text-white/80 text-xs mt-0.5 max-w-xs">{activeReel.title}</p>
                   </div>
                 )}
 

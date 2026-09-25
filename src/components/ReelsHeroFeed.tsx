@@ -362,7 +362,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
                 ref={videoRef}
                 key={activeReel.id}
                 src={activeReel.videoUrl}
-                poster={activeReel.thumbnail}
+                preload="auto"
                 playsInline
                 autoPlay
                 muted={isMuted}
@@ -373,18 +373,13 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
                   }
                 }}
                 onEnded={handleNextReel}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover bg-black"
               />
             )
           ) : (
-            // High-Res Demo Thumbnail with Aesthetic Placeholder
-            <div className="relative w-full h-full flex items-center justify-center bg-slate-900">
-              <img
-                src={activeReel.thumbnail}
-                alt={activeReel.title}
-                className="w-full h-full object-cover brightness-75"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/30 flex flex-col items-center justify-center p-6 text-center">
+            // Clean Dark Reel Placeholder without fake stock images
+            <div className="relative w-full h-full flex items-center justify-center bg-slate-950">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
                 <div className="w-16 h-16 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-2xl mb-3 ring-4 ring-white/20 animate-pulse">
                   <Play className="w-8 h-8 fill-current ml-1" />
                 </div>
