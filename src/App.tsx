@@ -129,21 +129,7 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-[#0A66C2] selection:text-white">
-      {/* Top Urgent Announcement Bar */}
-      <AnnouncementBar onWhatsAppClick={() => handleWhatsAppClick(WHATSAPP_INQUIRY_MSG, false)} />
-
-      {/* Main Sticky Navigation Bar */}
-      <Navbar
-        onOpenOrderTracking={() => setShowOrderTrackingModal(true)}
-        onOpenAdmin={() => setShowAdminModal(true)}
-        onOpenAiAssistant={() => setShowAiAssistantModal(true)}
-        onOpenOffer={() => setShowOfferModal(true)}
-        onWhatsAppClick={(msg) => handleWhatsAppClick(msg || ORDER_NOW_MSG, true)}
-        wishlistCount={wishlistIds.length}
-        onOpenWishlist={() => {}}
-      />
-
-      {/* 🎬 INSTAGRAM / SNAPCHAT REELS DEMO HERO FEED (Site Load Trust Builder) */}
+      {/* 🎬 INSTAGRAM / SNAPCHAT REELS DEMO HERO FEED (Site Load Direct View) */}
       <ReelsHeroFeed
         onWhatsAppClick={handleWhatsAppClick}
         onExploreWebsite={() => {
@@ -155,7 +141,21 @@ export function App() {
       />
 
       {/* 🌐 MAIN WEBSITE DETAILS, CATALOG, REVIEWS & FAQ */}
-      <div id="website-main-content">
+      <div id="website-main-content" className="relative">
+        {/* Top Urgent Announcement Bar */}
+        <AnnouncementBar onWhatsAppClick={() => handleWhatsAppClick(WHATSAPP_INQUIRY_MSG, false)} />
+
+        {/* Main Sticky Navigation Bar */}
+        <Navbar
+          onOpenOrderTracking={() => setShowOrderTrackingModal(true)}
+          onOpenAdmin={() => setShowAdminModal(true)}
+          onOpenAiAssistant={() => setShowAiAssistantModal(true)}
+          onOpenOffer={() => setShowOfferModal(true)}
+          onWhatsAppClick={(msg) => handleWhatsAppClick(msg || ORDER_NOW_MSG, true)}
+          wishlistCount={wishlistIds.length}
+          onOpenWishlist={() => {}}
+        />
+
         {/* HERO SECTION */}
         <HeroSection
           onWhatsAppClick={(msg) => handleWhatsAppClick(msg || ORDER_NOW_MSG, true)}

@@ -41,6 +41,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
 
   const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const reelCardRef = useRef<HTMLDivElement | null>(null);
   const isScrollingRef = useRef<boolean>(false);
   const lastTapRef = useRef<number>(0);
 
@@ -128,20 +129,18 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     }
   };
 
-  // Native Wheel Event listener with { passive: false } to PREVENT whole page from scrolling
+  // Native Wheel Event listener with { passive: false } to PREVENT whole page from scrolling on desktop
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     const onWheelHandler = (e: WheelEvent) => {
-      // Debounce rapid wheel turns
       if (isScrollingRef.current) {
         e.preventDefault();
         return;
       }
 
       if (e.deltaY > 20) {
-        // Scroll Down -> Next Reel
         if (currentReelIndex < filteredReels.length - 1) {
           e.preventDefault();
           isScrollingRef.current = true;
@@ -153,9 +152,7 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
           setShowEndCard(true);
           setTimeout(() => { isScrollingRef.current = false; }, 420);
         }
-        // If showEndCard is already open, do not prevent default, allow scrolling to website
       } else if (e.deltaY < -20) {
-        // Scroll Up -> Previous Reel
         if (showEndCard) {
           e.preventDefault();
           setShowEndCard(false);
@@ -171,6 +168,59 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     el.addEventListener('wheel', onWheelHandler, { passive: false });
     return () => {
       el.removeEventListener('wheel', onWheelHandler);
+    };
+  }, [currentReelIndex, filteredReels.length, showEndCard]);
+
+  // Native Non-Passive Touch Event listener for Mobile Phones:
+  // PREVENTS page scrolling when swiping on the reel card, ensuring smooth vertical reel changes!
+  useEffect(() => {
+    const el = reelCardRef.current;
+    if (!el) return;
+
+    let touchStartY = 0;
+    let touchStartX = 0;
+    let isSwiping = false;
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+      touchStartX = e.touches[0].clientX;
+      isSwiping = true;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isSwiping) return;
+      // Stop the mobile browser from scrolling the webpage away while swiping on reels!
+      if (!showEndCard && e.cancelable) {
+        e.preventDefault();
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!isSwiping) return;
+      isSwiping = false;
+      const touchEndY = e.changedTouches[0].clientY;
+      const touchEndX = e.changedTouches[0].clientX;
+      const diffY = touchStartY - touchEndY;
+      const diffX = touchStartX - touchEndX;
+
+      // Vertical swipe threshold (30px)
+      if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 30) {
+        if (diffY > 0) {
+          handleNextReel(); // Swiped Up -> Next Reel
+        } else {
+          handlePrevReel(); // Swiped Down -> Prev Reel
+        }
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
     };
   }, [currentReelIndex, filteredReels.length, showEndCard]);
 
@@ -241,25 +291,6 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentReelIndex, filteredReels.length]);
 
-  // Touch Swipe navigation for mobile
-  const touchStartY = useRef<number>(0);
-  const touchStartX = useRef<number>(0);
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
-    touchStartX.current = e.touches[0].clientX;
-  };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const diffY = touchStartY.current - e.changedTouches[0].clientY;
-    const diffX = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 35) {
-      if (diffY > 0) {
-        handleNextReel(); // Swiped Up -> Next Reel
-      } else {
-        handlePrevReel(); // Swiped Down -> Prev Reel
-      }
-    }
-  };
-
   // 100% Focused on DECE
   const deceCategories = [
     { id: 'all', label: `🔥 All DECE Demos (${REELS_FEED_ITEMS.length})` },
@@ -273,14 +304,12 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
     <div
       id="reels-feed"
       ref={containerRef}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      className="relative bg-slate-950 text-white min-h-[92vh] sm:min-h-[88vh] flex flex-col justify-between overflow-hidden select-none border-b border-slate-800"
+      className="relative bg-slate-950 text-white h-[100dvh] sm:min-h-screen flex flex-col justify-between overflow-hidden select-none border-b border-slate-800"
     >
       {/* ========================================================= */}
       {/* 1. TOP BAR: Category Pills + Skip to Website CTA */}
       {/* ========================================================= */}
-      <div className="z-30 px-3 sm:px-6 pt-3 pb-2 bg-gradient-to-b from-slate-950/95 via-slate-950/70 to-transparent">
+      <div className="z-30 px-3 sm:px-6 pt-3 pb-2 bg-gradient-to-b from-slate-950/95 via-slate-950/70 to-transparent shrink-0">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
           
           {/* Live Badge */}
@@ -305,14 +334,14 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
         </div>
 
         {/* Category Filter Pills Bar (ONLY DECE) */}
-        <div className="max-w-5xl mx-auto mt-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
+        <div className="max-w-5xl mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
           {deceCategories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => handleCategorySelect(cat.id)}
-                className={`px-3.5 py-1 rounded-full text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-[#0A66C2] text-white shadow-md ring-2 ring-blue-400/40 scale-105'
                     : 'bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white'
@@ -328,12 +357,14 @@ export const ReelsHeroFeed: React.FC<ReelsHeroFeedProps> = ({
       {/* ========================================================= */}
       {/* 2. MAIN REELS STAGE (Centered Vertical 9:16 Video Player) */}
       {/* ========================================================= */}
-      <div className="flex-1 flex items-center justify-center p-2 sm:p-4 relative">
+      <div className="flex-1 flex items-center justify-center p-0 sm:p-4 relative w-full h-full overflow-hidden">
         
         {/* Main Phone-style Reel Card Frame with Wheel & Touch Navigation */}
         <div
+          ref={reelCardRef}
           onClick={handleVideoAreaClick}
-          className="relative w-full max-w-[400px] h-[78vh] sm:h-[82vh] max-h-[820px] bg-black rounded-3xl overflow-hidden shadow-2xl border border-slate-800 flex items-center justify-center cursor-pointer group select-none"
+          style={{ touchAction: 'none', overscrollBehavior: 'none' }}
+          className="relative w-full max-w-[420px] h-full sm:h-[82vh] max-h-[840px] bg-black rounded-none sm:rounded-3xl overflow-hidden shadow-2xl border-0 sm:border sm:border-slate-800 flex items-center justify-center cursor-pointer group select-none touch-none"
         >
           
           {/* Top Segmented Story Progress Bar */}
