@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Product } from '../types';
 import { FileText, Check, Sparkles, Eye, Download, ShieldCheck, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Heart, Play, Pause, Video, Film, ZoomIn, ZoomOut, Maximize2, MessageCircle, BookOpen, Volume2, VolumeX } from 'lucide-react';
+import { CATEGORY_SHOWCASES_DATA, SHOW_VIDEO_DEMO_BOX, getYouTubeEmbedUrl } from '../data/showcaseData';
 
 interface ProductsSectionProps {
   products: Product[];
@@ -11,39 +12,6 @@ interface ProductsSectionProps {
   onToggleWishlist: (product: Product) => void;
   wishlistIds: string[];
   searchQuery?: string;
-}
-
-interface VideoReelItem {
-  id: string;
-  title: string;
-  duration: string;
-  views: string;
-  thumbnail: string;
-  description: string;
-  videoUrl?: string;
-}
-
-interface SamplePdfItem {
-  id: string;
-  code: string;
-  title: string;
-  pagesCount: number;
-  fileSize: string;
-  previewImage: string;
-  description: string;
-  pdfUrl?: string;
-  downloadUrl?: string;
-}
-
-interface CategoryShowcaseData {
-  id: string;
-  label: string;
-  title: string;
-  subtitle: string;
-  priceTag: string;
-  whatsappMessage: string;
-  reels: VideoReelItem[];
-  pdfs: SamplePdfItem[];
 }
 
 export const ProductsSection: React.FC<ProductsSectionProps> = ({
@@ -76,327 +44,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
     { id: 'ma_hw', label: '🎓 MA Assignment' },
   ];
 
-  // Comprehensive data for 2 boxes in each category (5 Reels + 5 PDFs)
-  const categoryShowcases: Record<string, CategoryShowcaseData> = {
-    dece_hw: {
-      id: 'dece_hw',
-      label: 'DECE Assignment',
-      title: 'DECE (DECE-1, DECE-2 & DECE-3) Handwritten Assignment Hub',
-      subtitle: 'Complete 3-subject handwritten set on clean A4 foolscap sheets with neat black/blue pen according to official IGNOU guidelines.',
-      priceTag: '₹300 Booking • ₹700 Cash on Delivery (COD)',
-      whatsappMessage: 'Hi Guru Nanak Photostat, I want to order DECE (DECE-1, DECE-2, DECE-3) Handwritten Assignment Set.',
-      reels: [
-        {
-          id: 'dece-reel-3',
-          title: 'DECE-3 Working With Children Handwritten Unboxing Reel',
-          duration: '0:58',
-          views: '16.5k',
-          thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785746242/Assignemt_3_pp430m.mp4',
-          description: 'Full unboxing video showing complete 25-30 pages per assignment written by experienced subject experts.',
-        },
-        {
-          id: 'dece-reel-2',
-          title: 'DECE-2 Child Services Pen & Handwriting Quality Check',
-          duration: '0:52',
-          views: '11.8k',
-          thumbnail: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745779/Assignemt_2_uh8g9y.mp4',
-          description: 'Showing genuine pen-written answers on A4 foolscap pages with proper indexing & 100% IGNOU guidelines.',
-        },
-        {
-          id: 'dece-reel-4',
-          title: 'DECE 2025-26 Complete 3 Subject Handwritten Set Showcase',
-          duration: '1:10',
-          views: '22.1k',
-          thumbnail: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785746263/Assignemt_4_v8gazc.mp4',
-          description: 'All 3 subjects (DECE-1, DECE-2, DECE-3) neatly bound and packaged together with Cash on Delivery.',
-        },
-        {
-          id: 'dece-reel-1',
-          title: 'DECE-1 Early Childhood Care Handwritten Assignment Real Copy',
-          duration: '0:45',
-          views: '14.2k',
-          thumbnail: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745092/Assignemt_1_ths626.mp4',
-          description: 'Inspecting neat handwriting, margins, page headings, and diagrammatic answers for DECE-1 assignment.',
-        },
-        {
-          id: 'dece-reel-5',
-          title: 'Guru Nanak Photostat DECE Student Parcel Dispatch Reel',
-          duration: '0:38',
-          views: '28.4k',
-          thumbnail: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785746246/Assignemt_5_otznql.mp4',
-          description: 'Live packing and SpeedPost/Delhivery courier dispatch process from Fatehabad (Haryana) shop.',
-        },
-      ],
-      pdfs: [
-        {
-          id: 'dece-pdf-1',
-          code: 'DECE Sample 1',
-          title: 'DECE Assignment Solved Sample PDF #1',
-          pagesCount: 28,
-          fileSize: '2.4 MB',
-          previewImage: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&auto=format&fit=crop',
-          description: 'Verified IGNOU DECE assignment solved sample PDF #1 with accurate answers and guidelines.',
-          pdfUrl: 'https://drive.google.com/file/d/1wKewLHkrV3DTWGx_j1lButhYdI0ALIy1/preview',
-          downloadUrl: 'https://drive.google.com/file/d/1wKewLHkrV3DTWGx_j1lButhYdI0ALIy1/view?usp=sharing',
-        },
-        {
-          id: 'dece-pdf-2',
-          code: 'DECE Sample 2',
-          title: 'DECE Assignment Solved Sample PDF #2',
-          pagesCount: 32,
-          fileSize: '2.8 MB',
-          previewImage: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=800&auto=format&fit=crop',
-          description: 'Verified IGNOU DECE assignment solved sample PDF #2 with complete handwritten format and references.',
-          pdfUrl: 'https://drive.google.com/file/d/1X25pYUqYEXdp_FirMcWRY0Z1Zj5xeyYg/preview',
-          downloadUrl: 'https://drive.google.com/file/d/1X25pYUqYEXdp_FirMcWRY0Z1Zj5xeyYg/view?usp=sharing',
-        },
-      ],
-    },
-    dece_proj: {
-      id: 'dece_proj',
-      label: 'DECE Project',
-      title: 'DECE-4 Internship Project File & Synopsis Hub',
-      subtitle: 'Complete customized DECE-4 Project Work File & Synopsis with Guide Approval, School Observation Logs & Activity Reports.',
-      priceTag: '₹300 Booking • ₹1700 Cash on Delivery (COD)',
-      whatsappMessage: 'Hi Guru Nanak Photostat, I want to order DECE-4 Internship Project File & Synopsis.',
-      reels: [
-        {
-          id: 'dece-proj-reel-1',
-          title: 'DECE-4 Internship Project File Hardcover Unboxing & Review',
-          duration: '1:05',
-          views: '25.3k',
-          thumbnail: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745041/Poject_1_xqb5fz.mp4',
-          description: 'Full unboxing of hardcover DECE-4 final project report binder with all 30 activity plans attached.',
-        },
-        {
-          id: 'dece-proj-reel-2',
-          title: 'DECE-4 Project Synopsis Approval Letter & Guide CV Reel',
-          duration: '0:50',
-          views: '19.2k',
-          thumbnail: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745047/Poject_2_tecryq.mp4',
-          description: 'Demonstrating valid Guide Resume, Qualification Certificate, and signed Annexure forms for 100% approval.',
-        },
-        {
-          id: 'dece-proj-reel-3',
-          title: 'DECE-04 Working Guide & Annexures Filling Video Guide',
-          duration: '1:15',
-          views: '18.7k',
-          thumbnail: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745045/Poject_3_iuhc0p.mp4',
-          description: 'Step-by-step video on how Annexure 1, 2, 3, and school principal stamp signatures are arranged.',
-        },
-        {
-          id: 'dece-proj-reel-4',
-          title: 'DECE Project 100% IGNOU HQ Approval Guarantee Explanation',
-          duration: '0:48',
-          views: '32.1k',
-          thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745060/Poject_4_hbqep6.mp4',
-          description: 'Explaining our 100% money-back or free revision guarantee if IGNOU Maidan Garhi requests any edits.',
-        },
-        {
-          id: 'dece-proj-reel-5',
-          title: 'DECE Project Report 30 Days Activity Plan Execution Reel',
-          duration: '1:22',
-          views: '35.8k',
-          thumbnail: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745042/Poject_5_m6ftfg.mp4',
-          description: 'A close look at day-by-day preschool activity logs, child reaction charts, and teacher comments.',
-        },
-      ],
-      pdfs: [
-        {
-          id: 'dece-proj-pdf-2',
-          code: 'DECE Project 1',
-          title: 'DECE-4 Internship Project Report Sample PDF #1',
-          pagesCount: 18,
-          fileSize: '1.9 MB',
-          previewImage: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=800&auto=format&fit=crop',
-          description: 'Approved DECE-4 synopsis proposal copy with objective statements and activity schedule.',
-          pdfUrl: 'https://drive.google.com/file/d/1X25pYUqYEXdp_FirMcWRY0Z1Zj5xeyYg/preview',
-          downloadUrl: 'https://drive.google.com/file/d/1X25pYUqYEXdp_FirMcWRY0Z1Zj5xeyYg/view?usp=sharing',
-        },
-        {
-          id: 'dece-proj-pdf-1',
-          code: 'DECE Project 2',
-          title: 'DECE-4 Internship Project Report Sample PDF #2',
-          pagesCount: 85,
-          fileSize: '8.5 MB',
-          previewImage: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&auto=format&fit=crop',
-          description: 'Full sample of DECE-4 project file including Phase 1, Phase 2, and Phase 3 activities.',
-          pdfUrl: 'https://drive.google.com/file/d/1wKewLHkrV3DTWGx_j1lButhYdI0ALIy1/preview',
-          downloadUrl: 'https://drive.google.com/file/d/1wKewLHkrV3DTWGx_j1lButhYdI0ALIy1/view?usp=sharing',
-        },
-      ],
-    },
-    ba_hw: {
-      id: 'ba_hw',
-      label: 'BA Assignment',
-      title: 'BA / BAG / BCOMG / BSCG Solved & Handwritten Assignment Hub',
-      subtitle: 'High quality solved PDF and neat handwritten assignments for BAG, BCOMG, BSCG, and all Bachelor Degree courses.',
-      priceTag: '₹180 per Subject • Fast Home Delivery',
-      whatsappMessage: 'Hi Guru Nanak Photostat, I want to order BA / BAG / BCOMG Handwritten Assignments.',
-      reels: [
-        {
-          id: 'ba-reel-1',
-          title: 'BEVAE-181 Environmental Studies Handwritten Assignment Reel',
-          duration: '0:42',
-          views: '18.2k',
-          thumbnail: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785746263/Assignemt_4_v8gazc.mp4',
-          description: 'Neatly written BEVAE-181 assignment on A4 foolscap sheets with high-contrast pen and clear diagrams.',
-        },
-        {
-          id: 'ba-reel-2',
-          title: 'BSOC-131 Introduction to Sociology Neat Handwriting Reel',
-          duration: '0:48',
-          views: '14.6k',
-          thumbnail: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785746242/Assignemt_3_pp430m.mp4',
-          description: 'English medium BSOC-131 assignment showing proper margins, subheadings, and references.',
-        },
-        {
-          id: 'ba-reel-3',
-          title: 'BHDLA-135 Hindi Bhasha Vividh Prayog Assignment Reel',
-          duration: '0:55',
-          views: '15.9k',
-          thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745779/Assignemt_2_uh8g9y.mp4',
-          description: 'Hindi medium BHDLA-135 handwritten assignment sample with beautiful handwriting and zero errors.',
-        },
-        {
-          id: 'ba-reel-4',
-          title: 'BCOC-131 Financial Accounting Solved Assignment Video',
-          duration: '1:02',
-          views: '12.3k',
-          thumbnail: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785746246/Assignemt_5_otznql.mp4',
-          description: 'Commerce BCOC-131 numerical balance sheet tables and neat ledger accounts handwriting.',
-        },
-        {
-          id: 'ba-reel-5',
-          title: 'BAG 1st & 2nd Year Complete Assignment SpeedPost Parcel Reel',
-          duration: '0:50',
-          views: '29.4k',
-          thumbnail: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745092/Assignemt_1_ths626.mp4',
-          description: 'Parcel packing of 8 subjects bundle for BAG 1st Year student with live tracking code.',
-        },
-      ],
-      pdfs: [
-        {
-          id: 'ba-pdf-1',
-          code: 'BA Sample 1',
-          title: 'BA Assignment Solved Sample PDF #1',
-          pagesCount: 26,
-          fileSize: '2.1 MB',
-          previewImage: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&auto=format&fit=crop',
-          description: 'Official solved assignment PDF for BA / BAG with complete answers.',
-          pdfUrl: 'https://drive.google.com/file/d/1wKewLHkrV3DTWGx_j1lButhYdI0ALIy1/preview',
-          downloadUrl: 'https://drive.google.com/file/d/1wKewLHkrV3DTWGx_j1lButhYdI0ALIy1/view?usp=sharing',
-        },
-        {
-          id: 'ba-pdf-2',
-          code: 'BA Sample 2',
-          title: 'BA Assignment Solved Sample PDF #2',
-          pagesCount: 28,
-          fileSize: '2.5 MB',
-          previewImage: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=800&auto=format&fit=crop',
-          description: 'BA / BAG solved assignment sample PDF formatted for 2025-2026 submission.',
-          pdfUrl: 'https://drive.google.com/file/d/1X25pYUqYEXdp_FirMcWRY0Z1Zj5xeyYg/preview',
-          downloadUrl: 'https://drive.google.com/file/d/1X25pYUqYEXdp_FirMcWRY0Z1Zj5xeyYg/view?usp=sharing',
-        },
-      ],
-    },
-    ma_hw: {
-      id: 'ma_hw',
-      label: 'MA Assignment',
-      title: 'MA (MHD, MEG, MPS, MAH) & MBA Assignment & Project Hub',
-      subtitle: 'Master Degree high-scoring handwritten assignments, solved PDFs, and synopsis files prepared by PhD subject scholars.',
-      priceTag: '₹180 - ₹250 per Subject • Expert Writers',
-      whatsappMessage: 'Hi Guru Nanak Photostat, I want to order MA / Master Degree Handwritten Assignments.',
-      reels: [
-        {
-          id: 'ma-reel-1',
-          title: 'MHD-02 Adhunik Hindi Kavya Handwritten Assignment Video Reel',
-          duration: '0:52',
-          views: '17.8k',
-          thumbnail: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785746246/Assignemt_5_otznql.mp4',
-          description: 'Neatly handwritten MHD-02 assignment with beautiful Hindi calligraphic style and full word limit.',
-        },
-        {
-          id: 'ma-reel-2',
-          title: 'MEG-01 British Poetry MA English Assignment Writing Reel',
-          duration: '0:46',
-          views: '13.9k',
-          thumbnail: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785746242/Assignemt_3_pp430m.mp4',
-          description: 'MA English MEG-01 assignment written with high vocabulary and critical analysis for top grades.',
-        },
-        {
-          id: 'ma-reel-3',
-          title: 'MMPP-001 MBA Project Synopsis & Report Hardcover Reel',
-          duration: '1:10',
-          views: '24.1k',
-          thumbnail: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745092/Assignemt_1_ths626.mp4',
-          description: 'MBA Marketing / Finance project report hardcover binding and questionnaire sample.',
-        },
-        {
-          id: 'ma-reel-4',
-          title: 'MA Political Science / History Solved Assignment Unboxing',
-          duration: '0:58',
-          views: '19.3k',
-          thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785745779/Assignemt_2_uh8g9y.mp4',
-          description: 'Master Degree assignment bundle unboxing for MPS-001, MPS-002, and MAH history papers.',
-        },
-        {
-          id: 'ma-reel-5',
-          title: 'MA Degree 25-30 Pages A4 Foolscap Quality Inspection Reel',
-          duration: '0:44',
-          views: '21.0k',
-          thumbnail: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&auto=format&fit=crop',
-          videoUrl: 'https://res.cloudinary.com/u1pgidk7/video/upload/v1785746263/Assignemt_4_v8gazc.mp4',
-          description: 'Quality inspection of page thickness, handwriting alignment, and study centre approval standards.',
-        },
-      ],
-      pdfs: [
-        {
-          id: 'ma-pdf-1',
-          code: 'MA Sample 1',
-          title: 'MA Assignment Solved Sample PDF #1',
-          pagesCount: 34,
-          fileSize: '3.1 MB',
-          previewImage: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&auto=format&fit=crop',
-          description: 'Complete solved assignment PDF for Master degree courses with detailed answers.',
-          pdfUrl: 'https://drive.google.com/file/d/1wKewLHkrV3DTWGx_j1lButhYdI0ALIy1/preview',
-          downloadUrl: 'https://drive.google.com/file/d/1wKewLHkrV3DTWGx_j1lButhYdI0ALIy1/view?usp=sharing',
-        },
-        {
-          id: 'ma-pdf-2',
-          code: 'MA Sample 2',
-          title: 'MA Assignment Solved Sample PDF #2',
-          pagesCount: 30,
-          fileSize: '2.7 MB',
-          previewImage: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=800&auto=format&fit=crop',
-          description: 'Master degree solved assignment sample PDF formatted for 2025-2026 submission.',
-          pdfUrl: 'https://drive.google.com/file/d/1X25pYUqYEXdp_FirMcWRY0Z1Zj5xeyYg/preview',
-          downloadUrl: 'https://drive.google.com/file/d/1X25pYUqYEXdp_FirMcWRY0Z1Zj5xeyYg/view?usp=sharing',
-        },
-      ],
-    },
-  };
-
-  const currentCategoryData = categoryShowcases[selectedCategory] || categoryShowcases['dece_hw'];
+  const currentCategoryData = CATEGORY_SHOWCASES_DATA[selectedCategory] || CATEGORY_SHOWCASES_DATA['dece_hw'];
   const activeReel = currentCategoryData.reels[activeReelIndex] || currentCategoryData.reels[0];
   const activePdf = currentCategoryData.pdfs[activePdfIndex] || currentCategoryData.pdfs[0];
 
@@ -563,130 +211,151 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
         {/* ---------------------------------------------------- */}
         {/* EXACTLY 2 BOXES GRID FOR ACTIVE CATEGORY */}
         {/* ---------------------------------------------------- */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+        <div className={`grid grid-cols-1 ${SHOW_VIDEO_DEMO_BOX ? 'lg:grid-cols-2' : 'max-w-2xl mx-auto'} gap-6 sm:gap-8`}>
           
           {/* =================================================== */}
           {/* BOX 1: 🎥 VIDEO REELS DEMO BOX (5 VIDEO REELS) */}
           {/* =================================================== */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden">
-            
-            {/* Box Header */}
-            <div className="bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white p-3.5 sm:p-4 flex items-center justify-between border-b border-rose-700">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center font-bold shrink-0">
-                  <Film className="w-5 h-5 text-amber-200" />
-                </div>
-                <h3 className="font-extrabold text-base sm:text-lg text-white">
-                  Demo Video
-                </h3>
-              </div>
-            </div>
-
-            {/* Video Player Stage Area - Instagram Reels Style with Auto-Scroll */}
-            <div className="relative aspect-[4/5] sm:aspect-video bg-slate-950 overflow-hidden flex items-center justify-center group select-none">
+          {SHOW_VIDEO_DEMO_BOX && (
+            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden">
               
-              {/* Instagram Top Segmented Progress Bar */}
-              <div className="absolute top-2.5 left-3 right-3 z-20 flex gap-1.5">
-                {currentCategoryData.reels.map((_, idx) => {
-                  let widthStyle = '0%';
-                  if (idx < activeReelIndex) widthStyle = '100%';
-                  else if (idx === activeReelIndex) widthStyle = `${reelProgress}%`;
-
-                  return (
-                    <div key={idx} className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden backdrop-blur-xs">
-                      <div
-                        className="h-full bg-red-500 transition-all duration-100 ease-linear rounded-full"
-                        style={{ width: widthStyle }}
-                      />
-                    </div>
-                  );
-                })}
+              {/* Box Header */}
+              <div className="bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white p-3.5 sm:p-4 flex items-center justify-between border-b border-rose-700">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center font-bold shrink-0">
+                    <Film className="w-5 h-5 text-amber-200" />
+                  </div>
+                  <h3 className="font-extrabold text-base sm:text-lg text-white">
+                    Demo Video
+                  </h3>
+                </div>
               </div>
 
-              {/* Video Element or Background Thumbnail */}
-              {activeReel.videoUrl ? (
-                <video
-                  ref={videoRef}
-                  key={activeReel.id}
-                  src={activeReel.videoUrl}
-                  poster={activeReel.thumbnail}
-                  playsInline
-                  muted={isMutedReel}
-                  onTimeUpdate={() => {
-                    if (videoRef.current && videoRef.current.duration) {
-                      setReelProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
-                    }
+              {/* Video Player Stage Area - Instagram Reels Style with Auto-Scroll */}
+              <div className="relative aspect-[4/5] sm:aspect-video bg-slate-950 overflow-hidden flex items-center justify-center group select-none">
+                
+                {/* Instagram Top Segmented Progress Bar */}
+                <div className="absolute top-2.5 left-3 right-3 z-20 flex gap-1.5">
+                  {currentCategoryData.reels.map((_, idx) => {
+                    let widthStyle = '0%';
+                    if (idx < activeReelIndex) widthStyle = '100%';
+                    else if (idx === activeReelIndex) widthStyle = `${reelProgress}%`;
+
+                    return (
+                      <div key={idx} className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden backdrop-blur-xs">
+                        <div
+                          className="h-full bg-red-500 transition-all duration-100 ease-linear rounded-full"
+                          style={{ width: widthStyle }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Video Element, YouTube Embed, or Background Thumbnail */}
+                {activeReel.videoUrl ? (
+                  getYouTubeEmbedUrl(activeReel.videoUrl) ? (
+                    <iframe
+                      key={activeReel.id}
+                      src={getYouTubeEmbedUrl(activeReel.videoUrl)!}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      ref={videoRef}
+                      key={activeReel.id}
+                      src={activeReel.videoUrl}
+                      poster={activeReel.thumbnail}
+                      playsInline
+                      muted={isMutedReel}
+                      onTimeUpdate={() => {
+                        if (videoRef.current && videoRef.current.duration) {
+                          setReelProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
+                        }
+                      }}
+                      onEnded={() => {
+                        setActiveReelIndex((prev) => (prev + 1) % currentCategoryData.reels.length);
+                        setIsPlayingReel(false);
+                      }}
+                      className={`w-full h-full object-cover transition-all duration-700 ${
+                        isPlayingReel ? 'scale-105 filter brightness-95' : 'brightness-75 group-hover:scale-105'
+                      }`}
+                    />
+                  )
+                ) : (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <img
+                      src={activeReel.thumbnail}
+                      alt={activeReel.title}
+                      className="w-full h-full object-cover brightness-75"
+                    />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-black/40 backdrop-blur-xs">
+                      <Video className="w-10 h-10 text-white/90 mb-2 drop-shadow" />
+                      <p className="text-white font-black text-sm sm:text-base drop-shadow">Demo Video Coming Soon</p>
+                      <p className="text-white/80 text-xs mt-0.5 max-w-xs">New video sample link will be added soon.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Instagram Video Gradients (only for non-iframe) */}
+                {!getYouTubeEmbedUrl(activeReel.videoUrl) && (
+                  <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-transparent to-slate-950/90 pointer-events-none" />
+                )}
+
+                {/* Center Play / Pause Toggle Button for HTML5 Video only */}
+                {!getYouTubeEmbedUrl(activeReel.videoUrl) && activeReel.videoUrl && (
+                  <button
+                    onClick={() => setIsPlayingReel(!isPlayingReel)}
+                    className={`absolute z-10 w-16 h-16 rounded-full bg-red-600/90 hover:bg-red-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer ring-4 ring-white/30 ${
+                      isPlayingReel ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
+                    }`}
+                    title={isPlayingReel ? 'Pause Reel' : 'Play Video Reel'}
+                  >
+                    {isPlayingReel ? (
+                      <Pause className="w-8 h-8 fill-current" />
+                    ) : (
+                      <Play className="w-8 h-8 fill-current ml-1" />
+                    )}
+                  </button>
+                )}
+
+                {/* Left Side Centered Navigation Control (Previous Video) */}
+                <button
+                  onClick={() => {
+                    setActiveReelIndex((prev) => (prev - 1 + currentCategoryData.reels.length) % currentCategoryData.reels.length);
+                    setIsPlayingReel(false);
                   }}
-                  onEnded={() => {
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-slate-900/80 hover:bg-red-600 text-white flex items-center justify-center border border-white/20 backdrop-blur-md shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer group/nav"
+                  title="Previous Video"
+                >
+                  <ChevronLeft className="w-6 h-6 group-hover/nav:-translate-x-0.5 transition-transform" />
+                </button>
+
+                {/* Right Side Centered Navigation Control (Next Video) */}
+                <button
+                  onClick={() => {
                     setActiveReelIndex((prev) => (prev + 1) % currentCategoryData.reels.length);
                     setIsPlayingReel(false);
                   }}
-                  className={`w-full h-full object-cover transition-all duration-700 ${
-                    isPlayingReel ? 'scale-105 filter brightness-95' : 'brightness-75 group-hover:scale-105'
-                  }`}
-                />
-              ) : (
-                <img
-                  src={activeReel.thumbnail}
-                  alt={activeReel.title}
-                  className={`w-full h-full object-cover transition-all duration-700 ${
-                    isPlayingReel ? 'scale-105 filter brightness-90' : 'brightness-75 group-hover:scale-105'
-                  }`}
-                />
-              )}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-slate-900/80 hover:bg-red-600 text-white flex items-center justify-center border border-white/20 backdrop-blur-md shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer group/nav"
+                  title="Next Video"
+                >
+                  <ChevronRight className="w-6 h-6 group-hover/nav:translate-x-0.5 transition-transform" />
+                </button>
 
-              {/* Instagram Video Gradients */}
-              <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-transparent to-slate-950/90 pointer-events-none" />
+                {/* Bottom Caption Overlay */}
+                <div className="absolute bottom-3 left-3 right-3 z-10 text-white text-center bg-slate-950/60 backdrop-blur-xs py-1 px-3 rounded-lg border border-white/10">
+                  <p className="text-white text-xs sm:text-sm font-black line-clamp-1 drop-shadow">
+                    {activeReel.title}
+                  </p>
+                </div>
 
-              {/* Center Play / Pause Toggle Button */}
-              <button
-                onClick={() => setIsPlayingReel(!isPlayingReel)}
-                className={`absolute z-10 w-16 h-16 rounded-full bg-red-600/90 hover:bg-red-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer ring-4 ring-white/30 ${
-                  isPlayingReel ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
-                }`}
-                title={isPlayingReel ? 'Pause Reel' : 'Play Video Reel'}
-              >
-                {isPlayingReel ? (
-                  <Pause className="w-8 h-8 fill-current" />
-                ) : (
-                  <Play className="w-8 h-8 fill-current ml-1" />
-                )}
-              </button>
-
-              {/* Left Side Centered Navigation Control (Previous Video) */}
-              <button
-                onClick={() => {
-                  setActiveReelIndex((prev) => (prev - 1 + currentCategoryData.reels.length) % currentCategoryData.reels.length);
-                  setIsPlayingReel(false);
-                }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-slate-900/80 hover:bg-red-600 text-white flex items-center justify-center border border-white/20 backdrop-blur-md shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer group/nav"
-                title="Previous Video"
-              >
-                <ChevronLeft className="w-6 h-6 group-hover/nav:-translate-x-0.5 transition-transform" />
-              </button>
-
-              {/* Right Side Centered Navigation Control (Next Video) */}
-              <button
-                onClick={() => {
-                  setActiveReelIndex((prev) => (prev + 1) % currentCategoryData.reels.length);
-                  setIsPlayingReel(false);
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-slate-900/80 hover:bg-red-600 text-white flex items-center justify-center border border-white/20 backdrop-blur-md shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer group/nav"
-                title="Next Video"
-              >
-                <ChevronRight className="w-6 h-6 group-hover/nav:translate-x-0.5 transition-transform" />
-              </button>
-
-              {/* Bottom Caption Overlay */}
-              <div className="absolute bottom-3 left-3 right-3 z-10 text-white text-center bg-slate-950/60 backdrop-blur-xs py-1 px-3 rounded-lg border border-white/10">
-                <p className="text-white text-xs sm:text-sm font-black line-clamp-1 drop-shadow">
-                  {activeReel.title}
-                </p>
               </div>
 
             </div>
-
-          </div>
+          )}
 
 
           {/* =================================================== */}
